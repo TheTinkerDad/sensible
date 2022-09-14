@@ -1,2 +1,2 @@
 # sensible
-A basic UI to quickly execute simple Ansible playbooks
+A small tool that provides monitoring for your Linux server via Home Assistant sensors via MQTT discovery.

@@ -1,100 +1,91 @@
 package main
 
 import (
-	"database/sql"
+	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-        "os/exec"
-	"strconv"
+	"sync"
 	"text/template"
+	"time"
 
-	"github.com/GeertJohan/go.rice"
-	_ "github.com/mattn/go-sqlite3"
+	"TheTinkerDad/sensible/mqtt"
+	"TheTinkerDad/sensible/settings"
+	"TheTinkerDad/sensible/web"
+	"TheTinkerDad/sensible/web/api"
 )
 
-type Page struct {
-	Title string
-	Body  string
-}
+func apiHandler(w http.ResponseWriter, r *http.Request) {
 
-func savePlaybooks() {
+	log.Println(fmt.Sprintf("Calling %s...", r.URL.Path))
 
-	database, err := sql.Open("sqlite3", "./settings.db")
-        if err != nil {
-                log.Fatal(err)
-        }
+	var object interface{} = nil
 
-	statement, err := database.Prepare("CREATE TABLE IF NOT EXISTS playbooks (id INTEGER PRIMARY KEY, filename TEXT, description TEXT)")
-        if err != nil {
-                log.Fatal(err)
-        }
-	statement.Exec()
-
-	statement, err = database.Prepare("INSERT INTO playbooks (filename, description) VALUES (?, ?)")
-        if err != nil {
-                log.Fatal(err)
-        }
-	statement.Exec("shutdown-node.yaml", "Restarts one or more nodes")
-
-	rows, err := database.Query("SELECT id, filename, description FROM playbooks")
-        if err != nil {
-                log.Fatal(err)
-        }
-
-	var id int
-	var filename string
-	var desc string
-	for rows.Next() {
-		rows.Scan(&id, &filename, &desc)
-		log.Println(strconv.Itoa(id) + ": " + filename + " " + desc)
+	if r.URL.Path == "/api/ansible/info" {
+		object = api.AnsibleInfo()
 	}
-}
 
-var box *rice.Box = nil
-
-func loadPage() *Page {
-	return &Page{Title: "Hello", Body: "Hello World!"}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(object)
 }
 
 func pageHandler(w http.ResponseWriter, r *http.Request) {
 
-	var p *Page = nil
+	var p *web.Page = nil
 
 	log.Println(fmt.Sprintf("Fetching %s...", r.URL.Path))
 
 	if r.URL.Path == "/index.html" {
-		p = loadPage()
-	} else if r.URL.Path == "/info" {
-                out, _ := exec.Command("ansible", "--version").Output()
-		p = &Page{Title: "Ansible Info", Body: string(out)}
+		p = web.WelcomePage()
+	} else {
+		p = web.ErrorPage()
 	}
 
-	templateString, err := box.String("index.html")
+	templateString, err := web.WebContent.String("index.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	t, err := template.New("Index").Parse(templateString)
-        if err != nil {
-                log.Fatal(err)
-        }
-
+	if err != nil {
+		log.Fatal(err)
+	}
 	t.Execute(w, p)
+}
+
+func startHTTPServer(wg *sync.WaitGroup) *http.Server {
+	srv := &http.Server{Addr: ":8080"}
+
+	staticWebContentHandler := http.FileServer(web.WebContent.HTTPBox())
+	http.Handle("/static/", staticWebContentHandler)
+	http.HandleFunc("/api/", apiHandler)
+	http.HandleFunc("/", pageHandler)
+
+	go func() {
+		defer wg.Done()
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe(): %v", err)
+		}
+	}()
+
+	log.Println("Listening on port 8080...")
+	return srv
 }
 
 func main() {
 
-	savePlaybooks()
+	settings.EnsureOk()
+	mqtt.EnsureOk()
+	web.EnsureOk()
 
-	conf := rice.Config{
-		LocateOrder: []rice.LocateMethod{rice.LocateEmbedded, rice.LocateAppended, rice.LocateFS},
-	}
-	box, _ = conf.FindBox("data")
+	serverWaitGroup := &sync.WaitGroup{}
+	serverWaitGroup.Add(1)
+	srv := startHTTPServer(serverWaitGroup)
 
-	cssFileServer := http.FileServer(box.HTTPBox())
-	http.Handle("/css/", cssFileServer)
-	http.HandleFunc("/", pageHandler)
-        log.Println("Listening on port 8080...")
-	http.ListenAndServe(":8080", nil)
+	time.Sleep(10 * time.Second)
+
+	log.Println("Shutting down...")
+	srv.Shutdown(context.TODO())
+	serverWaitGroup.Wait()
 }
