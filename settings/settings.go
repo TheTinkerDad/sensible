@@ -1,77 +1,84 @@
 package settings
 
-// TODO: THIS FILE IS JUST A SKELETON RIGHT NOW! Known issues:
-// "Save" has hardcoded values
-// "Load" keep overwriting the domain section with data[domain] = make(map[string]string)
-
 import (
-	"database/sql"
+	"os"
 	"log"
-
-	// Needed to work with SQLite DB files
-	_ "github.com/mattn/go-sqlite3"
+	"gopkg.in/yaml.v3"
+	"errors"
 )
 
-var database *sql.DB = nil
+type MqttSettings struct {
+	Hostname	string
+	Port		string
+	Username	string
+	Password	string
+	ClientId	string
+}
 
-// domain:key:value
-var data map[string]map[string]string = nil
+type BackendSettings struct {
+	SmartCtlEnabled	bool
+	NetDataEnabled bool
+}
+
+type AllSettings struct {
+	Mqtt MqttSettings
+	Backend BackendSettings
+}
+
+var All AllSettings
 
 func init() {
 
-	log.Println("Opening settings database...")
-
-	db, err := sql.Open("sqlite3", "./sensible.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS configuration (id INTEGER PRIMARY KEY, domain TEXT, key TEXT, value TEXT)")
-	if err != nil {
-		log.Fatal(err)
-	}
-	statement.Exec()
-
-	database = db
-
+	log.Println("Opening configuration file...")
+	Save()
 	Load()
 }
 
 // Save Saves the current settings
 func Save() {
 
-	statement, err := database.Prepare("INSERT INTO configuration (domain, key, value) VALUES (?, ?, ?)")
-	if err != nil {
-		log.Fatal(err)
+	if _, err := os.Stat("settings.yaml"); errors.Is(err, os.ErrNotExist) {
+
+		log.Println("Config file not found, writing default config...")
+
+		All.Mqtt = MqttSettings{"192.168.1.4", "1883", "", "", "sensible_mqtt_client"}
+		All.Backend = BackendSettings{false, false}
+
+		yaml, err := yaml.Marshal(&All)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		f, err2 := os.Create("settings.yaml")
+		if err2 != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()	
+
+		_, err2 = f.Write(yaml)
+		if err2 != nil {
+			log.Fatal(err)
+		}
 	}
-	statement.Exec("mqtt", "broker-hostname", "192.168.1.4")
 }
 
 // Load Loads the current settings
 func Load() {
 
-	data = make(map[string]map[string]string)
-
-	rows, err := database.Query("SELECT domain, key, value FROM configuration")
+	f, err := os.Open("settings.yaml")
 	if err != nil {
-		log.Fatal(err)
+		 log.Fatal(err)
 	}
+	defer f.Close()		
 
-	var domain string
-	var key string
-	var value string
-	for rows.Next() {
-		rows.Scan(&domain, &key, &value)
-		log.Println(domain + "." + key + ": " + value)
-		data[domain] = make(map[string]string)
-		data[domain][key] = value
+	fi, _ := f.Stat()
+	raw := make([]byte, fi.Size())
+	f.Read(raw)
+
+	err = yaml.Unmarshal(raw, &All)
+	if err != nil {
+		 log.Fatal(err)
 	}
-}
-
-// Get Returns a configuration parameter
-func Get(domain string, key string) string {
-
-	return data[domain][key]
 }
 
 // EnsureOk Checks if the loaded configuration is intact

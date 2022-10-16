@@ -10,14 +10,12 @@ import (
 
 func init() {
 
-	log.Println("Connecting to MQTT broker at " + settings.Get("mqtt", "broker-hostname") + "...")
-	var broker = settings.Get("mqtt", "broker-hostname")
-	var port = 1883
+	log.Printf("Connecting to MQTT broker at %s:%s...\n", settings.All.Mqtt.Hostname, settings.All.Mqtt.Port)
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
-	opts.SetClientID("sensible_mqtt_client")
-	//opts.SetUsername("emqx")
-	//opts.SetPassword("public")
+	opts.AddBroker(fmt.Sprintf("tcp://%s:%s", settings.All.Mqtt.Hostname, settings.All.Mqtt.Port))
+	opts.SetClientID(settings.All.Mqtt.ClientId)
+	opts.SetUsername(settings.All.Mqtt.Username)
+	opts.SetPassword(settings.All.Mqtt.Password)
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
