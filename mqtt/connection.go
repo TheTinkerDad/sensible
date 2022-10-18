@@ -8,6 +8,8 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+var MqttClient mqtt.Client
+
 func init() {
 
 	log.Printf("Connecting to MQTT broker at %s:%s...\n", settings.All.Mqtt.Hostname, settings.All.Mqtt.Port)
@@ -19,8 +21,8 @@ func init() {
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	client := mqtt.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
+	MqttClient = mqtt.NewClient(opts)
+	if token := MqttClient.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
 }

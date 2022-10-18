@@ -1,28 +1,34 @@
 package settings
 
 import (
-	"os"
-	"log"
-	"gopkg.in/yaml.v3"
 	"errors"
+	"log"
+	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 type MqttSettings struct {
-	Hostname	string
-	Port		string
-	Username	string
-	Password	string
-	ClientId	string
+	Hostname string
+	Port     string
+	Username string
+	Password string
+	ClientId string
+}
+
+type DiscoverySettings struct {
+	Prefix string
 }
 
 type BackendSettings struct {
-	SmartCtlEnabled	bool
-	NetDataEnabled bool
+	SmartCtlEnabled bool
+	NetDataEnabled  bool
 }
 
 type AllSettings struct {
-	Mqtt MqttSettings
-	Backend BackendSettings
+	Mqtt      MqttSettings
+	Discovery DiscoverySettings
+	Backend   BackendSettings
 }
 
 var All AllSettings
@@ -41,7 +47,7 @@ func Save() {
 
 		log.Println("Config file not found, writing default config...")
 
-		All.Mqtt = MqttSettings{"192.168.1.4", "1883", "", "", "sensible_mqtt_client"}
+		All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
 		All.Backend = BackendSettings{false, false}
 
 		yaml, err := yaml.Marshal(&All)
@@ -53,12 +59,11 @@ func Save() {
 		if err2 != nil {
 			log.Fatal(err)
 		}
-		defer f.Close()	
-
 		_, err2 = f.Write(yaml)
 		if err2 != nil {
 			log.Fatal(err)
 		}
+		f.Close()
 	}
 }
 
@@ -67,9 +72,9 @@ func Load() {
 
 	f, err := os.Open("settings.yaml")
 	if err != nil {
-		 log.Fatal(err)
+		log.Fatal(err)
 	}
-	defer f.Close()		
+	defer f.Close()
 
 	fi, _ := f.Stat()
 	raw := make([]byte, fi.Size())
@@ -77,7 +82,7 @@ func Load() {
 
 	err = yaml.Unmarshal(raw, &All)
 	if err != nil {
-		 log.Fatal(err)
+		log.Fatal(err)
 	}
 }
 

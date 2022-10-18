@@ -20,3 +20,8 @@ upx:
 
 add-resources:
 	rice append-dir --exec dist/sensible -d data
+
+run:
+	cd dist
+	./sensible
+	cd ..

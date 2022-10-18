@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"TheTinkerDad/sensible/mqtt"
+	"TheTinkerDad/sensible/sensors"
 	"TheTinkerDad/sensible/settings"
 	"TheTinkerDad/sensible/web"
 	"TheTinkerDad/sensible/web/api"
@@ -77,6 +78,7 @@ func main() {
 
 	settings.EnsureOk()
 	mqtt.EnsureOk()
+	sensors.EnsureOk()
 	web.EnsureOk()
 
 	serverWaitGroup := &sync.WaitGroup{}
