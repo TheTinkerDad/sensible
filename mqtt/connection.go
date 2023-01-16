@@ -4,6 +4,7 @@ import (
 	"TheTinkerDad/sensible/settings"
 	"fmt"
 	"log"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -21,6 +22,8 @@ func init() {
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
+	opts.SetAutoReconnect(true)
+	opts.SetMaxReconnectInterval(10 * time.Second)
 	MqttClient = mqtt.NewClient(opts)
 	if token := MqttClient.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())

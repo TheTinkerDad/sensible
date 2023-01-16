@@ -7,6 +7,8 @@ import (
 	"log"
 )
 
+var Paused bool
+
 func RegisterSensor(id string, device DeviceRegistration) {
 
 	payload, err := json.Marshal(device)
@@ -23,11 +25,11 @@ func RegisterSensor(id string, device DeviceRegistration) {
 
 func RemoveSensor(id string) {
 
-	log.Printf("Unregistering device with ID %s\n", id)
+	log.Printf("Unregistering device with ID %s", id)
 	MqttClient.Publish(fmt.Sprintf("%s/sensor/%s/config", settings.All.Discovery.Prefix, id), 1, true, DeviceRemoval{})
 }
 
 func SendSensorValue(id string, value string) {
-	log.Printf("Sending sensor value for device with ID %s: %s\n", id, value)
+	log.Printf("Sending sensor value for device with ID %s: %s", id, value)
 	MqttClient.Publish(fmt.Sprintf("%s/sensor/%s/state", settings.All.Discovery.Prefix, id), 1, false, value)
 }

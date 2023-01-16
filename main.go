@@ -1,14 +1,11 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
 	"text/template"
-	"time"
 
 	"TheTinkerDad/sensible/mqtt"
 	"TheTinkerDad/sensible/sensors"
@@ -17,27 +14,35 @@ import (
 	"TheTinkerDad/sensible/web/api"
 )
 
+var Server *http.Server
+
 func apiHandler(w http.ResponseWriter, r *http.Request) {
 
-	log.Println(fmt.Sprintf("Calling %s...", r.URL.Path))
+	log.Printf("Calling %s...\n", r.URL.Path)
 
-	var object interface{} = nil
-
-	if r.URL.Path == "/api/ansible/info" {
-		object = api.AnsibleInfo()
+	var result interface{} = nil
+	if r.URL.Path == "/api/shutdown" {
+		result = api.Shutdown(Server)
+	}
+	if r.URL.Path == "/api/pause-mqtt" {
+		result = api.PauseMqtt()
+	}
+	if r.URL.Path == "/api/resume-mqtt" {
+		result = api.ResumeMqtt()
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(object)
+	json.NewEncoder(w).Encode(result)
 }
 
+// Currently not used, but could be used to provide a basic
+// control UI or status page, etc.
 func pageHandler(w http.ResponseWriter, r *http.Request) {
 
+	log.Printf("Fetching %s...\n", r.URL.Path)
+
 	var p *web.Page = nil
-
-	log.Println(fmt.Sprintf("Fetching %s...", r.URL.Path))
-
 	if r.URL.Path == "/index.html" {
 		p = web.WelcomePage()
 	} else {
@@ -83,11 +88,6 @@ func main() {
 
 	serverWaitGroup := &sync.WaitGroup{}
 	serverWaitGroup.Add(1)
-	srv := startHTTPServer(serverWaitGroup)
-
-	time.Sleep(10 * time.Second)
-
-	log.Println("Shutting down...")
-	srv.Shutdown(context.TODO())
+	Server = startHTTPServer(serverWaitGroup)
 	serverWaitGroup.Wait()
 }
