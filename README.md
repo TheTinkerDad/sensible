@@ -1,7 +1,7 @@
 # What is Sensible?
 A small tool that provides monitoring for your Linux server via Home Assistant sensors and MQTT discovery.
 
-*Note*: Yes, it's probably a temporary name, but I wanted to check something that at least a bit makes sense... (Pun intended!)
+*Note*: Yes, it's probably a temporary name, but I wanted to have something that at least a bit makes sense... (Pun intended!)
 
 # How it works?
 
