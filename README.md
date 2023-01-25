@@ -7,13 +7,38 @@ A small tool that provides monitoring for your Linux server via Home Assistant s
 
 It does stuff - obviously this needs to be updated :)
 
-# How to use it?
-
-TBD
-
 # Building Sensible
 
+Being very early in development, Sensible is currently being built for Linux, using make:
+
+This downloads the minimal dependencies required
+```
+make prepare  
+```
+
+This one builds the executable and packs it with UPX
+```
+make build    
+```
+
+Also builds the executable, but without apply UPX
+```
+make build    
+```
+
+It is also possible to build example code for Docker, etc - see the Example usage section for this.
+
+# Configuration
+
 TBD
+
+# Example usage
+
+ * A standalone systemd service on Linux servers
+ * As a standalone service on Raspberry Pi's
+ * As a system service on Windows
+ * Plugged into Docker containers as a background process
+ * Plugged into LXC/LXD containers as a service
 
 # Development and planned features
 
@@ -23,9 +48,3 @@ TBD
  * Dockerfile 
  * Configuration via environment variables
  
-# Doc sections fully missing (besides the above ones)
-
- * docker-compose example
- * Systemd service file example
- * Example usage for LCX containers
- * Configuration example (settings.yaml)

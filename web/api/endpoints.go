@@ -12,6 +12,12 @@ type SimpleApiResult struct {
 	Result string
 }
 
+// Provides some minimal info about the process
+func Info() SimpleApiResult {
+
+	return SimpleApiResult{Result: "Sensible v0.1 Running..."}
+}
+
 // Shuts down the Sensible server
 func Shutdown(Server *http.Server) SimpleApiResult {
 

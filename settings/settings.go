@@ -43,7 +43,7 @@ func init() {
 // Save Saves the current settings
 func Save() {
 
-	if _, err := os.Stat("settings.yaml"); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat("/etc/sensible/settings.yaml"); errors.Is(err, os.ErrNotExist) {
 
 		log.Println("Config file not found, writing default config...")
 
@@ -55,7 +55,7 @@ func Save() {
 			log.Fatal(err)
 		}
 
-		f, err2 := os.Create("settings.yaml")
+		f, err2 := os.Create("/etc/sensible/settings.yaml")
 		if err2 != nil {
 			log.Fatal(err)
 		}
@@ -70,7 +70,7 @@ func Save() {
 // Load Loads the current settings
 func Load() {
 
-	f, err := os.Open("settings.yaml")
+	f, err := os.Open("/etc/sensible/settings.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"sync"
-	"text/template"
 
 	"TheTinkerDad/sensible/mqtt"
 	"TheTinkerDad/sensible/sensors"
 	"TheTinkerDad/sensible/settings"
-	"TheTinkerDad/sensible/web"
 	"TheTinkerDad/sensible/web/api"
 )
 
@@ -21,13 +20,13 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Calling %s...\n", r.URL.Path)
 
 	var result interface{} = nil
-	if r.URL.Path == "/api/shutdown" {
+	if r.URL.Path == "/api/info" {
+		result = api.Info()
+	} else if r.URL.Path == "/api/shutdown" {
 		result = api.Shutdown(Server)
-	}
-	if r.URL.Path == "/api/pause-mqtt" {
+	} else if r.URL.Path == "/api/pause-mqtt" {
 		result = api.PauseMqtt()
-	}
-	if r.URL.Path == "/api/resume-mqtt" {
+	} else if r.URL.Path == "/api/resume-mqtt" {
 		result = api.ResumeMqtt()
 	}
 
@@ -36,37 +35,9 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-// Currently not used, but could be used to provide a basic
-// control UI or status page, etc.
-func pageHandler(w http.ResponseWriter, r *http.Request) {
-
-	log.Printf("Fetching %s...\n", r.URL.Path)
-
-	var p *web.Page = nil
-	if r.URL.Path == "/index.html" {
-		p = web.WelcomePage()
-	} else {
-		p = web.ErrorPage()
-	}
-
-	templateString, err := web.WebContent.String("index.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-	t, err := template.New("Index").Parse(templateString)
-	if err != nil {
-		log.Fatal(err)
-	}
-	t.Execute(w, p)
-}
-
 func startHTTPServer(wg *sync.WaitGroup) *http.Server {
-	srv := &http.Server{Addr: ":8080"}
-
-	staticWebContentHandler := http.FileServer(web.WebContent.HTTPBox())
-	http.Handle("/static/", staticWebContentHandler)
+	srv := &http.Server{Addr: ":8090"}
 	http.HandleFunc("/api/", apiHandler)
-	http.HandleFunc("/", pageHandler)
 
 	go func() {
 		defer wg.Done()
@@ -75,16 +46,23 @@ func startHTTPServer(wg *sync.WaitGroup) *http.Server {
 		}
 	}()
 
-	log.Println("Listening on port 8080...")
+	log.Println("Listening on port 8090...")
 	return srv
 }
 
 func main() {
 
+	f, err := os.OpenFile("/var/log/sensible/sensible.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("Error opening file: %v", err)
+	}
+	defer f.Close()
+	log.SetOutput(f)
+	log.Println("Bootstrapping Sensible...")
+
 	settings.EnsureOk()
 	mqtt.EnsureOk()
 	sensors.EnsureOk()
-	web.EnsureOk()
 
 	serverWaitGroup := &sync.WaitGroup{}
 	serverWaitGroup.Add(1)
