@@ -34,17 +34,16 @@ TBD
 
 # Example usage
 
- * A standalone systemd service on Linux servers
- * As a standalone service on Raspberry Pi's
- * As a system service on Windows
- * Plugged into Docker containers as a background process
- * Plugged into LXC/LXD containers as a service
-
+ * [A standalone systemd service on Linux servers](examples/systemd/README.md)
+ * [Plugged into Docker containers](examples/docker/README.md) as a background process
+ * [Plugged into LXC/LXD containers](examples/lxc/README.md) as a service
+ * [As a standalone service on Raspberry Pi's](examples/raspberry-pi/README.md)
+ * [As a system service on Windows](examples/windows/README.md)
+ 
 # Development and planned features
 
  * Sensors that take CLI output should be configured as plugins without the need to rebuild them
  * There should be a way to implement sensors in Go for fully customized sensor data
  * Authentication for the API and a way to disable it
- * Dockerfile 
  * Configuration via environment variables
  
