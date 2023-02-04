@@ -11,6 +11,36 @@ import (
 // This is temporary stuff (a PoC, really!) and needs to go from here!
 // Instead, there needs to be some init code that iterates through
 // enabled backend plugins, registers the sensors for each of them.
+func registerSensorHeartbeat() {
+	mqtt.RegisterSensor("sensible_heartbeat",
+		mqtt.DeviceRegistration{
+			Name:              "Sensible Heartbeat",
+			DeviceClass:       "",
+			Icon:              "mdi:wrench-check",
+			StateTopic:        settings.All.Discovery.Prefix + "/sensor/sensible_heartbeat/state",
+			UnitOfMeasurement: "",
+			ValueTemplate:     "",
+			//ValueTemplate:     "{{value_json.value}}",
+		})
+}
+func registerSensorHeartbeatNR() {
+	mqtt.RegisterSensor("sensible_heartbeat_NR",
+		mqtt.DeviceRegistration{
+			Name:              "Sensible Heartbeat_NR",
+			DeviceClass:       "",
+			Icon:              "mdi:wrench-check",
+			StateTopic:        settings.All.Discovery.Prefix + "/sensor/sensible_heartbeat_NR/state",
+			UnitOfMeasurement: "",
+			ValueTemplate:     "",
+			//ValueTemplate:     "{{value_json.value}}",
+		})
+}
+
+func updateSensorHeartbeat() {
+
+	mqtt.SendSensorValue("sensible_heartbeat", "ONLINE")
+}
+
 func registerSensorBootTime() {
 	mqtt.RegisterSensor("sensible_boot_time",
 		mqtt.DeviceRegistration{
@@ -63,6 +93,8 @@ func init() {
 
 	go func() {
 
+		registerSensorHeartbeat()
+		registerSensorHeartbeatNR()
 		registerSensorBootTime()
 		registerSensorSystemTime()
 
@@ -72,6 +104,7 @@ func init() {
 				case msg := <-SensorUpdater:
 					log.Println("Received message", msg)
 				default:
+					updateSensorHeartbeat()
 					updateSensorBootTime()
 					updateSensorSystemTime()
 				}
