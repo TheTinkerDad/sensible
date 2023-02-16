@@ -17,7 +17,8 @@ type MqttSettings struct {
 }
 
 type DiscoverySettings struct {
-	Prefix string
+	DeviceName string
+	Prefix     string
 }
 
 type BackendSettings struct {
@@ -49,6 +50,7 @@ func Save() {
 
 		All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
 		All.Backend = BackendSettings{false, false}
+		All.Discovery = DiscoverySettings{"sensible-1", "homeassistant"}
 
 		yaml, err := yaml.Marshal(&All)
 		if err != nil {

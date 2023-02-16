@@ -8,31 +8,54 @@ import (
 	"time"
 )
 
+func getDeviceMetaData() mqtt.DeviceMetadata {
+
+	dmd := mqtt.DeviceMetadata{
+		Name:         settings.All.Discovery.DeviceName,
+		Manufacturer: "TheTinkerDad",
+		Model:        "Sensible-Sensor",
+	}
+	dmd.Identifiers = make([]string, 1)
+	dmd.Identifiers[0] = ("sensible-" + settings.All.Discovery.DeviceName)
+	return dmd
+}
+
 // This is temporary stuff (a PoC, really!) and needs to go from here!
 // Instead, there needs to be some init code that iterates through
 // enabled backend plugins, registers the sensors for each of them.
+
 func registerSensorHeartbeat() {
 	mqtt.RegisterSensor("sensible_heartbeat",
 		mqtt.DeviceRegistration{
-			Name:              "Sensible Heartbeat",
-			DeviceClass:       "",
-			Icon:              "mdi:wrench-check",
-			StateTopic:        settings.All.Discovery.Prefix + "/sensor/sensible_heartbeat/state",
-			UnitOfMeasurement: "",
-			ValueTemplate:     "",
+			Name:                "Sensible Heartbeat",
+			DeviceClass:         "",
+			Icon:                "mdi:wrench-check",
+			StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/sensible_heartbeat/state",
+			AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
+			PayloadAvailable:    "Online",
+			PayloadNotAvailable: "Offline",
+			UnitOfMeasurement:   "",
+			ValueTemplate:       "",
 			//ValueTemplate:     "{{value_json.value}}",
+			UniqueId: settings.All.Discovery.DeviceName + "_heartbeat",
+			Device:   getDeviceMetaData(),
 		})
 }
 func registerSensorHeartbeatNR() {
 	mqtt.RegisterSensor("sensible_heartbeat_NR",
 		mqtt.DeviceRegistration{
-			Name:              "Sensible Heartbeat_NR",
-			DeviceClass:       "",
-			Icon:              "mdi:wrench-check",
-			StateTopic:        settings.All.Discovery.Prefix + "/sensor/sensible_heartbeat_NR/state",
-			UnitOfMeasurement: "",
-			ValueTemplate:     "",
+			Name:                "Sensible Heartbeat_NR",
+			DeviceClass:         "",
+			Icon:                "mdi:wrench-check",
+			StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/sensible_heartbeat_NR/state",
+			AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
+			PayloadAvailable:    "Online",
+			PayloadNotAvailable: "Offline",
+			UnitOfMeasurement:   "",
+			ValueTemplate:       "",
 			//ValueTemplate:     "{{value_json.value}}",
+			UniqueId: settings.All.Discovery.DeviceName + "_heartbeat_nr",
+			Device:   getDeviceMetaData(),
 		})
 }
 
@@ -44,13 +67,18 @@ func updateSensorHeartbeat() {
 func registerSensorBootTime() {
 	mqtt.RegisterSensor("sensible_boot_time",
 		mqtt.DeviceRegistration{
-			Name:              "Sensible Boot Time",
-			DeviceClass:       "",
-			Icon:              "mdi:clock",
-			StateTopic:        settings.All.Discovery.Prefix + "/sensor/sensible_boot_time/state",
-			UnitOfMeasurement: "",
-			ValueTemplate:     "",
+			Name:                "Sensible Boot Time",
+			DeviceClass:         "",
+			Icon:                "mdi:clock",
+			StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/sensible_boot_time/state",
+			AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
+			PayloadAvailable:    "Online",
+			PayloadNotAvailable: "Offline",
+			UnitOfMeasurement:   "",
+			ValueTemplate:       "",
 			//ValueTemplate:     "{{value_json.value}}",
+			UniqueId: settings.All.Discovery.DeviceName + "_boottime",
+			Device:   getDeviceMetaData(),
 		})
 }
 
@@ -67,13 +95,18 @@ func updateSensorBootTime() {
 func registerSensorSystemTime() {
 	mqtt.RegisterSensor("sensible_system_time",
 		mqtt.DeviceRegistration{
-			Name:              "Sensible System Time",
-			DeviceClass:       "",
-			Icon:              "mdi:clock",
-			StateTopic:        settings.All.Discovery.Prefix + "/sensor/sensible_system_time/state",
-			UnitOfMeasurement: "",
-			ValueTemplate:     "",
+			Name:                "Sensible System Time",
+			DeviceClass:         "",
+			Icon:                "mdi:clock",
+			StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/sensible_system_time/state",
+			AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
+			PayloadAvailable:    "Online",
+			PayloadNotAvailable: "Offline",
+			UnitOfMeasurement:   "",
+			ValueTemplate:       "",
 			//ValueTemplate:     "{{value_json.value}}",
+			UniqueId: settings.All.Discovery.DeviceName + "_systemtime",
+			Device:   getDeviceMetaData(),
 		})
 }
 
@@ -93,9 +126,15 @@ func init() {
 
 	go func() {
 
-		registerSensorHeartbeat()
-		registerSensorHeartbeatNR()
-		registerSensorBootTime()
+		//		mqtt.RemoveSensor("sensible_os_uptime")
+		//		mqtt.RemoveSensor("sensible_heartbeat")
+		//		mqtt.RemoveSensor("sensible_heartbeat_NR")
+		//		mqtt.RemoveSensor("sensible_boot_time")
+		//		mqtt.RemoveSensor("sensible_system_time")
+
+		//		registerSensorHeartbeat()
+		//		registerSensorHeartbeatNR()
+		//		registerSensorBootTime()
 		registerSensorSystemTime()
 
 		for {
@@ -104,8 +143,9 @@ func init() {
 				case msg := <-SensorUpdater:
 					log.Println("Received message", msg)
 				default:
-					updateSensorHeartbeat()
-					updateSensorBootTime()
+					mqtt.SendDeviceAvailability("Online")
+					//					updateSensorHeartbeat()
+					//					updateSensorBootTime()
 					updateSensorSystemTime()
 				}
 			}
