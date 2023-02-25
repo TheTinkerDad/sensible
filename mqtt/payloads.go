@@ -22,4 +22,4 @@ type DeviceRegistration struct {
 }
 
 type DeviceRemoval struct {
-}
+} 

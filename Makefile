@@ -1,6 +1,7 @@
 prepare:
 	mkdir -p dist
-	go install github.com/eclipse/paho.mqtt.golang
+	go mod download github.com/eclipse/paho.mqtt.golang
+	go mod download github.com/TheTinkerDad/go.pipe
 
 build: test compile upx
 	echo "Successfully built Sensible."
@@ -10,6 +11,7 @@ build-noupx: test compile
 
 docker-example:
 	cp examples/docker/* dist/
+	cp -R examples/scripts dist/
 	$(SHELL) -c "cd dist;docker build -t thetinkerdad/sensible-nginx-test ."
 
 test:

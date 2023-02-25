@@ -39,7 +39,7 @@ var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	log.Printf("Connect lost: %v", err)
+	log.Printf("Connect lost: %v\n", err)
 }
 
 // EnsureOk Checks if the MQTT connection is intact

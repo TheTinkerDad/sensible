@@ -21,15 +21,18 @@ type DiscoverySettings struct {
 	Prefix     string
 }
 
-type BackendSettings struct {
-	SmartCtlEnabled bool
-	NetDataEnabled  bool
-}
-
 type AllSettings struct {
 	Mqtt      MqttSettings
 	Discovery DiscoverySettings
-	Backend   BackendSettings
+	Plugins   []Plugin
+}
+
+type Plugin struct {
+	Name     string
+	Kind     string
+	SensorId string
+	Script   string
+	Icon     string
 }
 
 var All AllSettings
@@ -37,20 +40,26 @@ var All AllSettings
 func init() {
 
 	log.Println("Opening configuration file...")
-	Save()
+	GenerateDefaultIfNotExists()
 	Load()
 }
 
-// Save Saves the current settings
-func Save() {
+// GenerateDefaultIfNotExists Generates the default configuration file
+func GenerateDefaultIfNotExists() {
 
 	if _, err := os.Stat("/etc/sensible/settings.yaml"); errors.Is(err, os.ErrNotExist) {
 
 		log.Println("Config file not found, writing default config...")
 
 		All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
-		All.Backend = BackendSettings{false, false}
 		All.Discovery = DiscoverySettings{"sensible-1", "homeassistant"}
+		All.Plugins = make([]Plugin, 6)
+		All.Plugins[0] = Plugin{"Sensible Heartbeat", "internal", "heartbeat", "", "mdi:wrench-check"}
+		All.Plugins[1] = Plugin{"Sensible Heartbeat NR", "internal", "heartbeat_NR", "", "mdi:wrench-check"}
+		All.Plugins[2] = Plugin{"Sensible Boot Time", "internal", "boot_time", "", "mdi:clock"}
+		All.Plugins[3] = Plugin{"Sensible System Time", "internal", "system_time", "", "mdi:clock"}
+		All.Plugins[4] = Plugin{"Sensible Root Disk Free", "script", "root_free", "root_free.sh", "mdi:harddisk"}
+		All.Plugins[5] = Plugin{"Sensible Host IP Address", "script", "ip_address", "ip_address.sh", "mdi:network"}
 
 		yaml, err := yaml.Marshal(&All)
 		if err != nil {

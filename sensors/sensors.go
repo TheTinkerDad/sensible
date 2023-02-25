@@ -3,10 +3,15 @@ package sensors
 import (
 	"TheTinkerDad/sensible/mqtt"
 	"TheTinkerDad/sensible/settings"
+	"bytes"
 	"log"
 	"os/exec"
 	"time"
+
+	pipe "github.com/TheTinkerDad/go.pipe"
 )
+
+const ScriptLocation = "/etc/sensible/scripts/"
 
 func getDeviceMetaData() mqtt.DeviceMetadata {
 
@@ -20,104 +25,62 @@ func getDeviceMetaData() mqtt.DeviceMetadata {
 	return dmd
 }
 
-// This is temporary stuff (a PoC, really!) and needs to go from here!
-// Instead, there needs to be some init code that iterates through
-// enabled backend plugins, registers the sensors for each of them.
+func getSensorMetaData(id string, name string, icon string) mqtt.DeviceRegistration {
 
-func registerSensorHeartbeat() {
-	mqtt.RegisterSensor("sensible_heartbeat",
-		mqtt.DeviceRegistration{
-			Name:                "Sensible Heartbeat",
-			DeviceClass:         "",
-			Icon:                "mdi:wrench-check",
-			StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/sensible_heartbeat/state",
-			AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
-			PayloadAvailable:    "Online",
-			PayloadNotAvailable: "Offline",
-			UnitOfMeasurement:   "",
-			ValueTemplate:       "",
-			//ValueTemplate:     "{{value_json.value}}",
-			UniqueId: settings.All.Discovery.DeviceName + "_heartbeat",
-			Device:   getDeviceMetaData(),
-		})
+	dr := mqtt.DeviceRegistration{
+		Name:                name,
+		DeviceClass:         "",
+		Icon:                icon,
+		StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/" + settings.All.Discovery.DeviceName + "_" + id + "/state",
+		AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
+		PayloadAvailable:    "Online",
+		PayloadNotAvailable: "Offline",
+		UnitOfMeasurement:   "",
+		ValueTemplate:       "",
+		//ValueTemplate:     "{{value_json.value}}",
+		UniqueId: settings.All.Discovery.DeviceName + "_" + id,
+		Device:   getDeviceMetaData(),
+	}
+	return dr
 }
-func registerSensorHeartbeatNR() {
-	mqtt.RegisterSensor("sensible_heartbeat_NR",
-		mqtt.DeviceRegistration{
-			Name:                "Sensible Heartbeat_NR",
-			DeviceClass:         "",
-			Icon:                "mdi:wrench-check",
-			StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/sensible_heartbeat_NR/state",
-			AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
-			PayloadAvailable:    "Online",
-			PayloadNotAvailable: "Offline",
-			UnitOfMeasurement:   "",
-			ValueTemplate:       "",
-			//ValueTemplate:     "{{value_json.value}}",
-			UniqueId: settings.All.Discovery.DeviceName + "_heartbeat_nr",
-			Device:   getDeviceMetaData(),
-		})
-}
+
+// These below methods are for updating the simple internal sensors we currently have
 
 func updateSensorHeartbeat() {
 
-	mqtt.SendSensorValue("sensible_heartbeat", "ONLINE")
+	mqtt.SendSensorValue("heartbeat", "ONLINE")
 }
 
-func registerSensorBootTime() {
-	mqtt.RegisterSensor("sensible_boot_time",
-		mqtt.DeviceRegistration{
-			Name:                "Sensible Boot Time",
-			DeviceClass:         "",
-			Icon:                "mdi:clock",
-			StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/sensible_boot_time/state",
-			AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
-			PayloadAvailable:    "Online",
-			PayloadNotAvailable: "Offline",
-			UnitOfMeasurement:   "",
-			ValueTemplate:       "",
-			//ValueTemplate:     "{{value_json.value}}",
-			UniqueId: settings.All.Discovery.DeviceName + "_boottime",
-			Device:   getDeviceMetaData(),
-		})
+func updateSensorSystemTime() {
+
+	now := time.Now()
+	mqtt.SendSensorValue("system_time", string(now.Format("2006-01-02 15:04:05")))
 }
 
 func updateSensorBootTime() {
 
+	// TODO: Find an OS-agnostic solution for this!
 	out, err := exec.Command("uptime", "-s").Output()
 	if err != nil {
 		log.Println(err)
 		out = []byte("Unavailable")
 	}
-	mqtt.SendSensorValue("sensible_boot_time", string(out))
+	mqtt.SendSensorValue("boot_time", string(out))
 }
 
-func registerSensorSystemTime() {
-	mqtt.RegisterSensor("sensible_system_time",
-		mqtt.DeviceRegistration{
-			Name:                "Sensible System Time",
-			DeviceClass:         "",
-			Icon:                "mdi:clock",
-			StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/sensible_system_time/state",
-			AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
-			PayloadAvailable:    "Online",
-			PayloadNotAvailable: "Offline",
-			UnitOfMeasurement:   "",
-			ValueTemplate:       "",
-			//ValueTemplate:     "{{value_json.value}}",
-			UniqueId: settings.All.Discovery.DeviceName + "_systemtime",
-			Device:   getDeviceMetaData(),
-		})
-}
+// This updates sensors based on scripts
 
-func updateSensorSystemTime() {
+func updateSensorWithScript(p settings.Plugin) {
 
-	out, err := exec.Command("date", "+%Y-%m-%d %T").Output()
-	if err != nil {
-		log.Println(err)
-		out = []byte("Unavailable")
+	log.Printf("Executing %s%s\n", ScriptLocation, p.Script)
+	// Using pipe here looks like an overkill, but can be useful later...
+	var b bytes.Buffer
+	if err := pipe.Command(&b,
+		exec.Command("sh", "-c", ScriptLocation+p.Script),
+	); err != nil {
+		log.Fatal(err)
 	}
-	mqtt.SendSensorValue("sensible_system_time", string(out))
+	mqtt.SendSensorValue(p.SensorId, b.String())
 }
 
 var SensorUpdater chan string
@@ -126,16 +89,9 @@ func init() {
 
 	go func() {
 
-		//		mqtt.RemoveSensor("sensible_os_uptime")
-		//		mqtt.RemoveSensor("sensible_heartbeat")
-		//		mqtt.RemoveSensor("sensible_heartbeat_NR")
-		//		mqtt.RemoveSensor("sensible_boot_time")
-		//		mqtt.RemoveSensor("sensible_system_time")
-
-		//		registerSensorHeartbeat()
-		//		registerSensorHeartbeatNR()
-		//		registerSensorBootTime()
-		registerSensorSystemTime()
+		for _, p := range settings.All.Plugins {
+			mqtt.RegisterSensor(getSensorMetaData(p.SensorId, p.Name, p.Icon))
+		}
 
 		for {
 			if !mqtt.Paused {
@@ -144,11 +100,29 @@ func init() {
 					log.Println("Received message", msg)
 				default:
 					mqtt.SendDeviceAvailability("Online")
-					//					updateSensorHeartbeat()
-					//					updateSensorBootTime()
-					updateSensorSystemTime()
+					for _, p := range settings.All.Plugins {
+						switch p.Kind {
+						case "internal":
+							//TODO: This should be reflection based!
+							switch p.SensorId {
+							case "heartbeat":
+								updateSensorHeartbeat()
+							case "heartbeat_NR":
+								// This is a sensor we reserved for NodeRed, so we don't update it here.
+							case "boot_time":
+								updateSensorBootTime()
+							case "system_time":
+								updateSensorSystemTime()
+							default:
+							}
+						case "script":
+							updateSensorWithScript(p)
+						default:
+						}
+					}
 				}
 			}
+			// TODO: This sould be removed and update periodicity should be configurable on a per-sensor basis
 			time.Sleep(10 * time.Second)
 		}
 	}()
