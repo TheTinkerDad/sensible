@@ -1,6 +1,12 @@
 # What is Sensible?
 A small tool that provides monitoring for your Linux server via Home Assistant sensors and MQTT discovery.
 
+By default Sensible comes with only a few example sensors, but it is basically a framework that enables you to quickly prototype and implement your own sensors.
+
+Thanks to MQTT discovery, its integration with Home Assistant is as smooth as possible.
+
+![Sensible as a device in Home Assistant](media/ha-device.jpg?raw=true "Sensible's MQTT based integration in Home Assistant")
+
 *Note*: Yes, it's probably a temporary name, but I wanted to have something that at least a bit makes sense... (Pun intended!)
 
 # How it works?
