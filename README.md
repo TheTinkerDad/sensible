@@ -31,6 +31,24 @@ There are currently two ways to implement sensors, although this part is still u
 First, you can code them in Golang and build them as part of Sensible.
 Second, you can implement them as unix shell scripts. In this case, you don't need to build Sensible, but you can use a prebuilt binary.
 
+# Quickstart guide
+
+ - Grab one of the releases 
+ 
+ Releases are located here: https://github.com/TheTinkerDad/sensible/releases
+
+ - The .tar.gz file only contains the binary. When you run it the first time (e.g. ./sensible ) it'll generate the default config file: /etc/sensible/settings.yaml
+
+ - Kill the application by pressing Ctrl-C
+
+ - Edit the config file
+
+ - Scripts should be located under /etc/sensible/scripts
+
+ - You can find the example scripts [here](examples/scripts) or you can start by making your own, they are rather simple
+
+ - Don't forget to update the config file to point to your scripts (see the plugins section of the config file)
+
 # Building Sensible
 
 Being very early in development, Sensible is currently being built for Linux, using make:
