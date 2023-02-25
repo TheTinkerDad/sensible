@@ -3,10 +3,24 @@ A small tool that provides monitoring for your Linux server via Home Assistant s
 
 By default Sensible comes with only a few example sensors, but it is basically a framework that enables you to quickly prototype and implement your own sensors.
 
-Thanks to MQTT discovery, its integration with Home Assistant is as smooth as possible.
+# Why should you use iit?
 
-![Sensible as a device in Home Assistant](media/ha-device.png?raw=true "Sensible's MQTT based integration in Home Assistant")
+ * It's tiny! Currently the binary is approximately 2.4Mb in size! You can put it into a Docker container and you won't even notice it's there!
 
+ * Thanks to MQTT discovery, its integration with Home Assistant is as smooth as possible.
+
+   ![Sensible as a device in Home Assistant](media/ha-device.png?raw=true "Sensible's MQTT based integration in Home Assistant")
+
+ * Because it follows basic MQTT / Home Assistant standards, it's easy to use with things like Lovelace UI, Node Red, you name it!
+
+   ![Sensible sensors on the Lovelace UI](media/ha-lovelace.png?raw=true "Sensible's example sensors on the Lovelace UI")
+
+ * It's fully opensource with a permissive license! You can fork it on GitHub and make your own version!
+
+ * It has a control REST API that enables disabling sensor data publishing, etc. (still WIP though)
+
+ * The developer behind is a veteran with 20+ years of experience, so the project is here to stay, you can expect support and future updates!
+ 
 *Note*: Yes, it's probably a temporary name, but I wanted to have something that at least a bit makes sense... (Pun intended!)
 
 # How it works?
@@ -31,7 +45,7 @@ This one builds the executable and packs it with UPX
 make build    
 ```
 
-Also builds the executable, but without apply UPX
+Also builds the executable, but without applying UPX
 ```
 make build    
 ```
@@ -103,8 +117,11 @@ The only requirement for these scripts is that they should be simple, with an ex
  
 # Development and planned features
 
- * There should be a way to implement sensors in Go for fully customized sensor data (plugin architecture)
- * Authentication for the API and a way to disable it
+ * Security! MQTT encryption and all the bells and whistles to make it production ready ASAP!
+ * There should be a way to implement sensors in Go for fully customized sensor data (plugin architecture) without rebuilding Sensible itself
+ * Authentication for the REST API and a way to disable it
+ * Documentation for the REST API
+ * A way to control Sensible via MQTT
  * Configuration via environment variables
  * A lot of small TODO items in the code
  
