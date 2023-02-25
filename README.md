@@ -33,11 +33,13 @@ Second, you can implement them as unix shell scripts. In this case, you don't ne
 
 # Quickstart guide
 
- - Grab one of the releases 
- 
- Releases are located here: https://github.com/TheTinkerDad/sensible/releases
+ - Currently only Linux is supported - if you're running other OSes, sorry, you'll have to wait!
 
- - The .tar.gz file only contains the binary. When you run it the first time (e.g. ./sensible ) it'll generate the default config file: /etc/sensible/settings.yaml
+ - Grab one of the releases from https://github.com/TheTinkerDad/sensible/releases or build Sensible on your own (see below)
+
+ - The .tar.gz file only contains the binary, extract it somewhere convenient.
+ 
+ - Run it the first time (e.g. ./sensible ) and it'll generate the default config file: /etc/sensible/settings.yaml
 
  - Kill the application by pressing Ctrl-C
 
