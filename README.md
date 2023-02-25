@@ -3,7 +3,7 @@ A small tool that provides monitoring for your Linux server via Home Assistant s
 
 By default Sensible comes with only a few example sensors, but it is basically a framework that enables you to quickly prototype and implement your own sensors.
 
-# Why should you use iit?
+# Why should you use Sensible?
 
  * It's tiny! Currently the binary is approximately 2.4Mb in size! You can put it into a Docker container and you won't even notice it's there!
 
@@ -13,7 +13,7 @@ By default Sensible comes with only a few example sensors, but it is basically a
 
  * Because it follows basic MQTT / Home Assistant standards, it's easy to use with things like Lovelace UI, Node Red, you name it!
 
-   ![Sensible sensors on the Lovelace UI](media/ha-lovelace.png?raw=true "Sensible's example sensors on the Lovelace UI")
+   ![Sensible sensors on the Lovelace UI](media/ha-lovelace-big.png?raw=true "Sensible's example sensors on the Lovelace UI")
 
  * It's fully opensource with a permissive license! You can fork it on GitHub and make your own version!
 
