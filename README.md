@@ -5,7 +5,7 @@ By default Sensible comes with only a few example sensors, but it is basically a
 
 Thanks to MQTT discovery, its integration with Home Assistant is as smooth as possible.
 
-![Sensible as a device in Home Assistant](media/ha-device.jpg?raw=true "Sensible's MQTT based integration in Home Assistant")
+![Sensible as a device in Home Assistant](media/ha-device.png?raw=true "Sensible's MQTT based integration in Home Assistant")
 
 *Note*: Yes, it's probably a temporary name, but I wanted to have something that at least a bit makes sense... (Pun intended!)
 
