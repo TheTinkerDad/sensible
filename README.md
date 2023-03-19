@@ -3,7 +3,7 @@ A small tool that provides monitoring for your Linux server via Home Assistant s
 
 By default Sensible comes with only a few example sensors, but it is basically a framework that enables you to quickly prototype and implement your own sensors.
 
-I've also made a video showcasing Sensible (first installment of a tutorial / development update series I'm working on).
+The below video showcases the first public version of Sensible and its capabilities. (This is the first installment of a tutorial / development update series.)
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/21pho997KuA/0.jpg)](https://www.youtube.com/watch?v=21pho997KuA)
 
