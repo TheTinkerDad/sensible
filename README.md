@@ -3,6 +3,10 @@ A small tool that provides monitoring for your Linux server via Home Assistant s
 
 By default Sensible comes with only a few example sensors, but it is basically a framework that enables you to quickly prototype and implement your own sensors.
 
+I've also made a video showcasing Sensible (first installment of a tutorial / development update series I'm working on).
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/21pho997KuA/0.jpg)](https://www.youtube.com/watch?v=21pho997KuA)
+
 # Why should you use Sensible?
 
  * It's tiny! Currently the binary is approximately 2.4Mb in size! You can put it into a Docker container and you won't even notice it's there!
