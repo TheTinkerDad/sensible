@@ -118,7 +118,7 @@ plugins:
       kind: script
       sensorid: ip_address
       script: ip_address.sh
-      icon: mdi:harddisk
+      icon: mdi:check-network
 ```
 
 # Example scripts
