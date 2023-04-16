@@ -1,12 +1,18 @@
 package settings
 
 import (
+	"TheTinkerDad/sensible/utility"
 	"errors"
 	"log"
 	"os"
 
 	"gopkg.in/yaml.v3"
 )
+
+type GeneralSettings struct {
+	Logfile        string
+	ScriptLocation string
+}
 
 type MqttSettings struct {
 	Hostname string
@@ -22,6 +28,7 @@ type DiscoverySettings struct {
 }
 
 type AllSettings struct {
+	General   GeneralSettings
 	Mqtt      MqttSettings
 	Discovery DiscoverySettings
 	Plugins   []Plugin
@@ -37,51 +44,70 @@ type Plugin struct {
 
 var All AllSettings
 
-func init() {
+var settingsFile string = "/etc/sensible/settings.yaml"
 
-	log.Println("Opening configuration file...")
-	GenerateDefaultIfNotExists()
-	Load()
+// Backs up the existing settings file - if there's any
+func BackupSettingsFile() {
+
+	if _, err := os.Stat(settingsFile); errors.Is(err, os.ErrNotExist) {
+		return
+	} else {
+		utility.Copy(settingsFile, settingsFile+".bkp")
+	}
+}
+
+// Generates the default configuration file
+func GenerateDefaults() {
+
+	All.General = GeneralSettings{"/var/log/sensible/sensible.log", "/etc/sensible/scripts/"}
+	All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
+	All.Discovery = DiscoverySettings{"sensible-1", "homeassistant"}
+	All.Plugins = make([]Plugin, 6)
+	All.Plugins[0] = Plugin{"Sensible Heartbeat", "internal", "heartbeat", "", "mdi:wrench-check"}
+	All.Plugins[1] = Plugin{"Sensible Heartbeat NR", "internal", "heartbeat_NR", "", "mdi:wrench-check"}
+	All.Plugins[2] = Plugin{"Sensible Boot Time", "internal", "boot_time", "", "mdi:clock"}
+	All.Plugins[3] = Plugin{"Sensible System Time", "internal", "system_time", "", "mdi:clock"}
+	All.Plugins[4] = Plugin{"Sensible Root Disk Free", "script", "root_free", "root_free.sh", "mdi:harddisk"}
+	All.Plugins[5] = Plugin{"Sensible Host IP Address", "script", "ip_address", "ip_address.sh", "mdi:network"}
+
+	yaml, err := yaml.Marshal(&All)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	f, err2 := os.Create(settingsFile)
+	if err2 != nil {
+		log.Fatal(err)
+	}
+	_, err2 = f.Write(yaml)
+	if err2 != nil {
+		log.Fatal(err)
+	}
+	f.Close()
+}
+
+// CreateFolders Creates the default folders used by Sensible
+func CreateFolders() {
+
+	log.Println("Creating default folders...")
+	utility.CreateFolder("/etc/sensible/scripts/")
+	utility.CreateFolder("/var/log/sensible")
 }
 
 // GenerateDefaultIfNotExists Generates the default configuration file
 func GenerateDefaultIfNotExists() {
 
-	if _, err := os.Stat("/etc/sensible/settings.yaml"); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(settingsFile); errors.Is(err, os.ErrNotExist) {
 
 		log.Println("Config file not found, writing default config...")
-
-		All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
-		All.Discovery = DiscoverySettings{"sensible-1", "homeassistant"}
-		All.Plugins = make([]Plugin, 6)
-		All.Plugins[0] = Plugin{"Sensible Heartbeat", "internal", "heartbeat", "", "mdi:wrench-check"}
-		All.Plugins[1] = Plugin{"Sensible Heartbeat NR", "internal", "heartbeat_NR", "", "mdi:wrench-check"}
-		All.Plugins[2] = Plugin{"Sensible Boot Time", "internal", "boot_time", "", "mdi:clock"}
-		All.Plugins[3] = Plugin{"Sensible System Time", "internal", "system_time", "", "mdi:clock"}
-		All.Plugins[4] = Plugin{"Sensible Root Disk Free", "script", "root_free", "root_free.sh", "mdi:harddisk"}
-		All.Plugins[5] = Plugin{"Sensible Host IP Address", "script", "ip_address", "ip_address.sh", "mdi:network"}
-
-		yaml, err := yaml.Marshal(&All)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		f, err2 := os.Create("/etc/sensible/settings.yaml")
-		if err2 != nil {
-			log.Fatal(err)
-		}
-		_, err2 = f.Write(yaml)
-		if err2 != nil {
-			log.Fatal(err)
-		}
-		f.Close()
+		GenerateDefaults()
 	}
 }
 
 // Load Loads the current settings
 func Load() {
 
-	f, err := os.Open("/etc/sensible/settings.yaml")
+	f, err := os.Open(settingsFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,4 +126,7 @@ func Load() {
 // EnsureOk Checks if the loaded configuration is intact
 func EnsureOk() {
 
+	log.Println("Opening configuration file...")
+	GenerateDefaultIfNotExists()
+	Load()
 }

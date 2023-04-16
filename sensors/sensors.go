@@ -11,8 +11,6 @@ import (
 	pipe "github.com/TheTinkerDad/go.pipe"
 )
 
-const ScriptLocation = "/etc/sensible/scripts/"
-
 func getDeviceMetaData() mqtt.DeviceMetadata {
 
 	dmd := mqtt.DeviceMetadata{
@@ -72,11 +70,11 @@ func updateSensorBootTime() {
 
 func updateSensorWithScript(p settings.Plugin) {
 
-	log.Printf("Executing %s%s\n", ScriptLocation, p.Script)
+	log.Printf("Executing %s%s\n", settings.All.General.ScriptLocation, p.Script)
 	// Using pipe here looks like an overkill, but can be useful later...
 	var b bytes.Buffer
 	if err := pipe.Command(&b,
-		exec.Command("sh", "-c", ScriptLocation+p.Script),
+		exec.Command("sh", "-c", settings.All.General.ScriptLocation+p.Script),
 	); err != nil {
 		log.Fatal(err)
 	}
@@ -85,7 +83,8 @@ func updateSensorWithScript(p settings.Plugin) {
 
 var SensorUpdater chan string
 
-func init() {
+// EnsureOk Triggers init() which starts registering the devices
+func EnsureOk() {
 
 	go func() {
 
@@ -126,9 +125,4 @@ func init() {
 			time.Sleep(10 * time.Second)
 		}
 	}()
-}
-
-// EnsureOk Triggers init() which starts registering the devices
-func EnsureOk() {
-
 }

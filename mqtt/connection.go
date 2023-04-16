@@ -11,7 +11,20 @@ import (
 
 var MqttClient mqtt.Client
 
-func init() {
+var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+	log.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+}
+
+var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
+	log.Println("Connected")
+}
+
+var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
+	log.Printf("Connect lost: %v\n", err)
+}
+
+// EnsureOk Checks if the MQTT connection is intact
+func EnsureOk() {
 
 	log.Printf("Connecting to MQTT broker at %s:%s...\n", settings.All.Mqtt.Hostname, settings.All.Mqtt.Port)
 	opts := mqtt.NewClientOptions()
@@ -28,21 +41,4 @@ func init() {
 	if token := MqttClient.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
-}
-
-var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	log.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
-}
-
-var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	log.Println("Connected")
-}
-
-var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	log.Printf("Connect lost: %v\n", err)
-}
-
-// EnsureOk Checks if the MQTT connection is intact
-func EnsureOk() {
-
 }
