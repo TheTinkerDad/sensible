@@ -1,3 +1,7 @@
+.EXPORT_ALL_VARIABLES:
+VERSION = 0.2.0
+BUILDDATE = $$(date)
+
 prepare:
 	mkdir -p dist
 	go mod download github.com/eclipse/paho.mqtt.golang
@@ -18,8 +22,8 @@ test:
 	go test
 
 compile:
-	# go build -ldflags="-s -w" -o dist/sensible
-	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -a -installsuffix cgo  -o dist/sensible
+	# go build -ldflags="-w" -o dist/sensible
+	CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -X 'TheTinkerDad/sensible/releaseinfo.BuildTime=$(BUILDDATE)' -X 'TheTinkerDad/sensible/releaseinfo.Version=$(VERSION)'" -a -installsuffix cgo  -o dist/sensible
 
 upx:
 	upx -9 dist/sensible

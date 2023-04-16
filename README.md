@@ -83,6 +83,9 @@ This is currently done via a the file /etc/sensible/settings.yaml
 A sample file looks like this
 
 ```
+general:
+    logfile: /var/log/sensible/sensible.log
+    scriptlocation: /etc/sensible/scripts/
 mqtt:
     hostname: 127.0.0.1
     port: "1883"
