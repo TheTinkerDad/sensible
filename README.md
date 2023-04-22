@@ -43,17 +43,22 @@ Second, you can implement them as unix shell scripts. In this case, you don't ne
 
  - The .tar.gz file only contains the binary, extract it somewhere convenient.
  
- - Run it the first time (e.g. ./sensible ) and it'll generate the default config file: /etc/sensible/settings.yaml
+ - Run it the first time with "./sensible -r" and it'll generate the default config file: /etc/sensible/settings.yaml and the required folders
 
- - Kill the application by pressing Ctrl-C
+ - Edit the config file to customize your settings
 
- - Edit the config file
-
- - Scripts should be located under /etc/sensible/scripts
+ - Scripts should be located under /etc/sensible/scripts (or in the folder you've configured in the settings.yaml file)
 
  - You can find the example scripts [here](examples/scripts) or you can start by making your own, they are rather simple
 
- - Don't forget to update the config file to point to your scripts (see the plugins section of the config file)
+ - Add a sensor entry in the config file for each of your scripts like:
+   ```
+   - name: Sensible Host IP Address
+     kind: script
+     sensorid: ip_address
+     script: ip_address.sh
+     icon: mdi:check-network
+   ```
 
 # Building Sensible
 
