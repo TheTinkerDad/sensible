@@ -1,3 +1,3 @@
 #!/bin/sh
 
-df -h / | tail -n 1 | awk '/ / {print$4}'
+df / | tail -n 1 | awk '/ / {printf "%.2f", $4 / 1048576}'

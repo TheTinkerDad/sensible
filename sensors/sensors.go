@@ -23,7 +23,7 @@ func getDeviceMetaData() mqtt.DeviceMetadata {
 	return dmd
 }
 
-func getSensorMetaData(id string, name string, icon string) mqtt.DeviceRegistration {
+func getSensorMetaData(id string, name string, icon string, unit string) mqtt.DeviceRegistration {
 
 	dr := mqtt.DeviceRegistration{
 		Name:                name,
@@ -33,7 +33,7 @@ func getSensorMetaData(id string, name string, icon string) mqtt.DeviceRegistrat
 		AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
 		PayloadAvailable:    "Online",
 		PayloadNotAvailable: "Offline",
-		UnitOfMeasurement:   "",
+		UnitOfMeasurement:   unit,
 		ValueTemplate:       "",
 		//ValueTemplate:     "{{value_json.value}}",
 		UniqueId: settings.All.Discovery.DeviceName + "_" + id,
@@ -89,7 +89,7 @@ func EnsureOk() {
 	go func() {
 
 		for _, p := range settings.All.Plugins {
-			mqtt.RegisterSensor(getSensorMetaData(p.SensorId, p.Name, p.Icon))
+			mqtt.RegisterSensor(getSensorMetaData(p.SensorId, p.Name, p.Icon, p.UnitOfMeasurement))
 		}
 
 		for {
