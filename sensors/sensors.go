@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"log"
 	"os/exec"
+	"sync"
 	"time"
 
 	pipe "github.com/TheTinkerDad/go.pipe"
@@ -83,10 +84,12 @@ func updateSensorWithScript(p settings.Plugin) {
 
 var SensorUpdater chan string
 
-// EnsureOk Triggers init() which starts registering the devices
-func EnsureOk() {
+// StartProcessing Starts the loop to process and send sensor data
+func StartProcessing(wg *sync.WaitGroup) {
 
 	go func() {
+
+		defer wg.Done()
 
 		for _, p := range settings.All.Plugins {
 			mqtt.RegisterSensor(getSensorMetaData(p.SensorId, p.Name, p.Icon, p.UnitOfMeasurement))

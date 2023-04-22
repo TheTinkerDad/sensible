@@ -27,10 +27,17 @@ type DiscoverySettings struct {
 	Prefix     string
 }
 
+type ApiSettings struct {
+	Enabled bool
+	Port    int
+	Token   string
+}
+
 type AllSettings struct {
 	General   GeneralSettings
 	Mqtt      MqttSettings
 	Discovery DiscoverySettings
+	Api       ApiSettings
 	Plugins   []Plugin
 }
 
@@ -63,6 +70,7 @@ func GenerateDefaults() {
 	All.General = GeneralSettings{"/var/log/sensible/sensible.log", "/etc/sensible/scripts/"}
 	All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
 	All.Discovery = DiscoverySettings{"sensible-1", "homeassistant"}
+	All.Api = ApiSettings{Port: 8090, Enabled: false, Token: utility.NewRandomUUID()}
 	All.Plugins = make([]Plugin, 6)
 	All.Plugins[0] = Plugin{"Sensible Heartbeat", "internal", "heartbeat", "", "", "mdi:wrench-check"}
 	All.Plugins[1] = Plugin{"Sensible Heartbeat NR", "internal", "heartbeat_NR", "", "", "mdi:wrench-check"}
@@ -124,8 +132,8 @@ func Load() {
 	}
 }
 
-// EnsureOk Checks if the loaded configuration is intact
-func EnsureOk() {
+// Initialize Tries to load the current settings - initializes a base settings file if there's none available
+func Initialize() {
 
 	log.Println("Opening configuration file...")
 	GenerateDefaultIfNotExists()
