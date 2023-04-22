@@ -23,8 +23,8 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 	log.Printf("Connect lost: %v\n", err)
 }
 
-// EnsureOk Checks if the MQTT connection is intact
-func EnsureOk() {
+// Initialize Checks if the MQTT connection is intact
+func Initialize() {
 
 	log.Printf("Connecting to MQTT broker at %s:%s...\n", settings.All.Mqtt.Hostname, settings.All.Mqtt.Port)
 	opts := mqtt.NewClientOptions()

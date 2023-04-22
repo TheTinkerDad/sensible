@@ -5,6 +5,7 @@ BUILDDATE = $$(date)
 prepare:
 	mkdir -p dist
 	go mod download github.com/eclipse/paho.mqtt.golang
+	go mod download github.com/google/uuid
 	go mod download github.com/TheTinkerDad/go.pipe
 
 build: test compile upx
