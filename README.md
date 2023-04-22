@@ -57,6 +57,7 @@ Second, you can implement them as unix shell scripts. In this case, you don't ne
      kind: script
      sensorid: ip_address
      script: ip_address.sh
+     unitofmeasurement: ""
      icon: mdi:check-network
    ```
 
@@ -105,31 +106,37 @@ plugins:
       kind: internal
       sensorid: heartbeat
       script: ""
+      unitofmeasurement: ""
       icon: mdi:wrench-check
     - name: Sensible Heartbeat NR
       kind: internal
       sensorid: heartbeat_NR
       script: ""
+      unitofmeasurement: ""
       icon: mdi:wrench-check
     - name: Sensible Boot Time
       kind: internal
       sensorid: boot_time
       script: ""
+      unitofmeasurement: ""
       icon: mdi:clock
     - name: Sensible System Time
       kind: internal
       sensorid: system_time
       script: ""
+      unitofmeasurement: ""
       icon: mdi:clock
     - name: Sensible Root Disk Free
       kind: script
       sensorid: root_free
       script: root_free.sh
+      unitofmeasurement: GB
       icon: mdi:harddisk
     - name: Sensible Host IP Address
       kind: script
       sensorid: ip_address
       script: ip_address.sh
+      unitofmeasurement: ""
       icon: mdi:check-network
 ```
 

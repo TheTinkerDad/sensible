@@ -35,11 +35,12 @@ type AllSettings struct {
 }
 
 type Plugin struct {
-	Name     string
-	Kind     string
-	SensorId string
-	Script   string
-	Icon     string
+	Name              string
+	Kind              string
+	SensorId          string
+	Script            string
+	UnitOfMeasurement string
+	Icon              string
 }
 
 var All AllSettings
@@ -63,12 +64,12 @@ func GenerateDefaults() {
 	All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
 	All.Discovery = DiscoverySettings{"sensible-1", "homeassistant"}
 	All.Plugins = make([]Plugin, 6)
-	All.Plugins[0] = Plugin{"Sensible Heartbeat", "internal", "heartbeat", "", "mdi:wrench-check"}
-	All.Plugins[1] = Plugin{"Sensible Heartbeat NR", "internal", "heartbeat_NR", "", "mdi:wrench-check"}
-	All.Plugins[2] = Plugin{"Sensible Boot Time", "internal", "boot_time", "", "mdi:clock"}
-	All.Plugins[3] = Plugin{"Sensible System Time", "internal", "system_time", "", "mdi:clock"}
-	All.Plugins[4] = Plugin{"Sensible Root Disk Free", "script", "root_free", "root_free.sh", "mdi:harddisk"}
-	All.Plugins[5] = Plugin{"Sensible Host IP Address", "script", "ip_address", "ip_address.sh", "mdi:network"}
+	All.Plugins[0] = Plugin{"Sensible Heartbeat", "internal", "heartbeat", "", "", "mdi:wrench-check"}
+	All.Plugins[1] = Plugin{"Sensible Heartbeat NR", "internal", "heartbeat_NR", "", "", "mdi:wrench-check"}
+	All.Plugins[2] = Plugin{"Sensible Boot Time", "internal", "boot_time", "", "", "mdi:clock"}
+	All.Plugins[3] = Plugin{"Sensible System Time", "internal", "system_time", "", "", "mdi:clock"}
+	All.Plugins[4] = Plugin{"Sensible Root Disk Free", "script", "root_free", "root_free.sh", "GB", "mdi:harddisk"}
+	All.Plugins[5] = Plugin{"Sensible Host IP Address", "script", "ip_address", "ip_address.sh", "", "mdi:network"}
 
 	yaml, err := yaml.Marshal(&All)
 	if err != nil {
