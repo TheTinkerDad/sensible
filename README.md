@@ -108,12 +108,6 @@ plugins:
       script: ""
       unitofmeasurement: ""
       icon: mdi:wrench-check
-    - name: Sensible Heartbeat NR
-      kind: internal
-      sensorid: heartbeat_NR
-      script: ""
-      unitofmeasurement: ""
-      icon: mdi:wrench-check
     - name: Sensible Boot Time
       kind: internal
       sensorid: boot_time
