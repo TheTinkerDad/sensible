@@ -37,6 +37,7 @@ func Initialize() {
 	opts.OnConnectionLost = connectLostHandler
 	opts.SetAutoReconnect(true)
 	opts.SetMaxReconnectInterval(10 * time.Second)
+	opts.SetWill(settings.All.Discovery.Prefix+"/sensor/"+settings.All.Discovery.DeviceName+"/availability", "Offline", 1, false)
 	MqttClient = mqtt.NewClient(opts)
 	if token := MqttClient.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())

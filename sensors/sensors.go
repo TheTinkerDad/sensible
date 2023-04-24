@@ -26,14 +26,25 @@ func getDeviceMetaData() mqtt.DeviceMetadata {
 
 func getSensorMetaData(id string, name string, icon string, unit string) mqtt.DeviceRegistration {
 
+	var deviceClass, stateTopic, availabilityTopic, payloadAvailable, payloadNotAvailable string
+	if id == "heartbeat" {
+		deviceClass = "connectivity"
+		stateTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability"
+	} else {
+		stateTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/" + settings.All.Discovery.DeviceName + "_" + id + "/state"
+		availabilityTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability"
+		payloadAvailable = "Online"
+		payloadNotAvailable = "Offline"
+	}
+
 	dr := mqtt.DeviceRegistration{
 		Name:                name,
-		DeviceClass:         "",
+		DeviceClass:         deviceClass,
 		Icon:                icon,
-		StateTopic:          settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/" + settings.All.Discovery.DeviceName + "_" + id + "/state",
-		AvailabilityTopic:   settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability",
-		PayloadAvailable:    "Online",
-		PayloadNotAvailable: "Offline",
+		StateTopic:          stateTopic,
+		AvailabilityTopic:   availabilityTopic,
+		PayloadAvailable:    payloadAvailable,
+		PayloadNotAvailable: payloadNotAvailable,
 		UnitOfMeasurement:   unit,
 		ValueTemplate:       "",
 		//ValueTemplate:     "{{value_json.value}}",
@@ -109,8 +120,6 @@ func StartProcessing(wg *sync.WaitGroup) {
 							switch p.SensorId {
 							case "heartbeat":
 								updateSensorHeartbeat()
-							case "heartbeat_NR":
-								// This is a sensor we reserved for NodeRed, so we don't update it here.
 							case "boot_time":
 								updateSensorBootTime()
 							case "system_time":
