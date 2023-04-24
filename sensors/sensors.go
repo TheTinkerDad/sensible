@@ -26,15 +26,14 @@ func getDeviceMetaData() mqtt.DeviceMetadata {
 
 func getSensorMetaData(id string, name string, icon string, unit string) mqtt.DeviceRegistration {
 
-	var deviceClass, stateTopic, availabilityTopic, payloadAvailable, payloadNotAvailable string
+	var deviceClass, stateTopic, availabilityTopic string
 	if id == "heartbeat" {
-		deviceClass = "connectivity"
 		stateTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability"
+		availabilityTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/always-available"
+		//availabilityTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability"
 	} else {
 		stateTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/" + settings.All.Discovery.DeviceName + "_" + id + "/state"
 		availabilityTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability"
-		payloadAvailable = "Online"
-		payloadNotAvailable = "Offline"
 	}
 
 	dr := mqtt.DeviceRegistration{
@@ -43,8 +42,8 @@ func getSensorMetaData(id string, name string, icon string, unit string) mqtt.De
 		Icon:                icon,
 		StateTopic:          stateTopic,
 		AvailabilityTopic:   availabilityTopic,
-		PayloadAvailable:    payloadAvailable,
-		PayloadNotAvailable: payloadNotAvailable,
+		PayloadAvailable:    "Online",
+		PayloadNotAvailable: "Offline",
 		UnitOfMeasurement:   unit,
 		ValueTemplate:       "",
 		//ValueTemplate:     "{{value_json.value}}",
@@ -55,11 +54,6 @@ func getSensorMetaData(id string, name string, icon string, unit string) mqtt.De
 }
 
 // These below methods are for updating the simple internal sensors we currently have
-
-func updateSensorHeartbeat() {
-
-	mqtt.SendSensorValue("heartbeat", "ONLINE")
-}
 
 func updateSensorSystemTime() {
 
@@ -95,6 +89,14 @@ func updateSensorWithScript(p settings.Plugin) {
 
 var SensorUpdater chan string
 
+// UnregisterAllSensors Sends MQTT messages to HA to deregister all sensors
+func UnregisterAllSensors() {
+
+	for _, p := range settings.All.Plugins {
+		mqtt.RemoveSensor(p.SensorId)
+	}
+}
+
 // StartProcessing Starts the loop to process and send sensor data
 func StartProcessing(wg *sync.WaitGroup) {
 
@@ -112,14 +114,13 @@ func StartProcessing(wg *sync.WaitGroup) {
 				case msg := <-SensorUpdater:
 					log.Println("Received message", msg)
 				default:
+					mqtt.SendAlwaysAvailableMessage()
 					mqtt.SendDeviceAvailability("Online")
 					for _, p := range settings.All.Plugins {
 						switch p.Kind {
 						case "internal":
 							//TODO: This should be reflection based!
 							switch p.SensorId {
-							case "heartbeat":
-								updateSensorHeartbeat()
 							case "boot_time":
 								updateSensorBootTime()
 							case "system_time":

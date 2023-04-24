@@ -14,7 +14,7 @@ import (
 	"TheTinkerDad/sensible/web/api"
 )
 
-func execute() {
+func bootstrap() {
 
 	log.Printf("Bootstrapping Sensible v%s (%s)\n", releaseinfo.Version, releaseinfo.BuildTime)
 	settings.Initialize()
@@ -24,11 +24,13 @@ func execute() {
 		log.Println("Error opening log file - logging will continue on standard output!")
 		log.Printf("Error details: %v\n", err)
 	} else {
-		defer f.Close()
 		log.SetOutput(f)
 	}
 
 	mqtt.Initialize()
+}
+
+func execute() {
 
 	funcWaitGroup := &sync.WaitGroup{}
 
@@ -47,13 +49,12 @@ func main() {
 
 	log.SetOutput(os.Stdout)
 
-	var pversion bool
-	var phelp bool
-	var preset bool
+	var pversion, phelp, preset, unregister bool
 
 	flag.BoolVar(&pversion, "v", false, "Show version info.")
 	flag.BoolVar(&phelp, "h", false, "Show command line options.")
 	flag.BoolVar(&preset, "r", false, "Reset settings or initialize a fresh install.")
+	flag.BoolVar(&unregister, "u", false, "Unregister all sensors from Home Assistant via MQTT.")
 	flag.Parse()
 
 	if phelp {
@@ -65,7 +66,12 @@ func main() {
 		settings.CreateFolders()
 		settings.BackupSettingsFile()
 		settings.GenerateDefaults()
+	} else if unregister {
+		bootstrap()
+		log.Println("Unregistering all sensors...")
+		sensors.UnregisterAllSensors()
 	} else {
+		bootstrap()
 		execute()
 	}
 }

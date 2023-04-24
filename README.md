@@ -132,6 +132,12 @@ plugins:
       script: ip_address.sh
       unitofmeasurement: ""
       icon: mdi:check-network
+    - name: Sensible Hostname
+      kind: script
+      sensorid: hostname
+      script: hostname.sh
+      unitofmeasurement: ""
+      icon: mdi:network      
 ```
 
 # Example scripts

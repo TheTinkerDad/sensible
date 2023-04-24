@@ -47,3 +47,10 @@ func SendDeviceAvailability(value string) {
 	log.Printf("Sending availability info for device with name %s: %s. Topic: %s", settings.All.Discovery.DeviceName, value, topic)
 	MqttClient.Publish(topic, 1, false, value)
 }
+
+func SendAlwaysAvailableMessage() {
+
+	topic := fmt.Sprintf("%s/sensor/%s/always-available", settings.All.Discovery.Prefix, settings.All.Discovery.DeviceName)
+	log.Printf("Sending 'always available' info for device with name %s. Topic: %s", settings.All.Discovery.DeviceName, topic)
+	MqttClient.Publish(topic, 1, false, "Online")
+}

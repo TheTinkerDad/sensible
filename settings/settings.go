@@ -77,6 +77,7 @@ func GenerateDefaults() {
 	All.Plugins[2] = Plugin{"Sensible System Time", "internal", "system_time", "", "", "mdi:clock"}
 	All.Plugins[3] = Plugin{"Sensible Root Disk Free", "script", "root_free", "root_free.sh", "GB", "mdi:harddisk"}
 	All.Plugins[4] = Plugin{"Sensible Host IP Address", "script", "ip_address", "ip_address.sh", "", "mdi:network"}
+	All.Plugins[5] = Plugin{"Sensible Hostname", "script", "hostname", "hostname.sh", "", "mdi:network"}
 
 	yaml, err := yaml.Marshal(&All)
 	if err != nil {
