@@ -4,6 +4,7 @@ import (
 	"TheTinkerDad/sensible/mqtt"
 	"TheTinkerDad/sensible/settings"
 	"bytes"
+	"fmt"
 	"os/exec"
 	"strings"
 	"sync"
@@ -37,7 +38,7 @@ func getSensorMetaData(id string, name string, icon string, unit string) mqtt.De
 	}
 
 	dr := mqtt.DeviceRegistration{
-		Name:                name,
+		Name:                fmt.Sprintf("%s %s", settings.All.Discovery.DeviceName, name),
 		DeviceClass:         deviceClass,
 		Icon:                icon,
 		StateTopic:          stateTopic,
