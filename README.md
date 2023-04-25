@@ -91,6 +91,7 @@ A sample file looks like this
 ```
 general:
     logfile: /var/log/sensible/sensible.log
+    loglevel: info
     scriptlocation: /etc/sensible/scripts/
 mqtt:
     hostname: 127.0.0.1
@@ -99,40 +100,40 @@ mqtt:
     password: ""
     clientid: sensible_mqtt_client
 discovery:
-    devicename: some-unique-identifier
+    devicename: sensible-demo
     prefix: homeassistant
 plugins:
-    - name: Sensible Heartbeat
+    - name: Heartbeat
       kind: internal
       sensorid: heartbeat
       script: ""
       unitofmeasurement: ""
       icon: mdi:wrench-check
-    - name: Sensible Boot Time
+    - name: Boot Time
       kind: internal
       sensorid: boot_time
       script: ""
       unitofmeasurement: ""
       icon: mdi:clock
-    - name: Sensible System Time
+    - name: System Time
       kind: internal
       sensorid: system_time
       script: ""
       unitofmeasurement: ""
       icon: mdi:clock
-    - name: Sensible Root Disk Free
+    - name: Root Disk Free
       kind: script
       sensorid: root_free
       script: root_free.sh
       unitofmeasurement: GB
       icon: mdi:harddisk
-    - name: Sensible Host IP Address
+    - name: Host IP Address
       kind: script
       sensorid: ip_address
       script: ip_address.sh
       unitofmeasurement: ""
       icon: mdi:check-network
-    - name: Sensible Hostname
+    - name: Hostname
       kind: script
       sensorid: hostname
       script: hostname.sh
