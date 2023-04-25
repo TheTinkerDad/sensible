@@ -31,3 +31,12 @@ upx:
 
 run:
 	$(SHELL) -c "cd dist;./sensible"
+
+release-linux-amd64: build
+	$(SHELL) -c "cd dist;tar cvzf sensible-linux-amd64-$(VERSION).tar.gz sensible"
+
+release-rpi-armv7: build
+	$(SHELL) -c "cd dist;tar cvzf sensible-rpi-armv7-$(VERSION).tar.gz sensible"
+
+release-rpi-armv8: build
+	$(SHELL) -c "cd dist;tar cvzf sensible-rpi-armv7-$(VERSION).tar.gz sensible"
