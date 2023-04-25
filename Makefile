@@ -35,8 +35,8 @@ run:
 release-linux-amd64: build
 	$(SHELL) -c "cd dist;tar cvzf sensible-linux-amd64-$(VERSION).tar.gz sensible"
 
-release-rpi-armv7: build
-	$(SHELL) -c "cd dist;tar cvzf sensible-rpi-armv7-$(VERSION).tar.gz sensible"
+release-rpi-armhf: build
+	$(SHELL) -c "cd dist;tar cvzf sensible-rpi-armhf-$(VERSION).tar.gz sensible"
 
-release-rpi-armv8: build
-	$(SHELL) -c "cd dist;tar cvzf sensible-rpi-armv7-$(VERSION).tar.gz sensible"
+release-rpi-arm64: build
+	$(SHELL) -c "cd dist;tar cvzf sensible-rpi-arm64-$(VERSION).tar.gz sensible"
