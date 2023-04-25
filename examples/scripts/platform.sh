@@ -1,0 +1,1 @@
+ uname --hardware-platform

@@ -138,7 +138,13 @@ plugins:
       sensorid: hostname
       script: hostname.sh
       unitofmeasurement: ""
-      icon: mdi:network      
+      icon: mdi:network
+    - name: Platform
+      kind: script
+      sensorid: platform
+      script: platform.sh
+      unitofmeasurement: ""
+      icon: mdi:wrench-check
 ```
 
 # Example scripts
