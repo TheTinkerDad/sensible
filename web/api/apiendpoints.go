@@ -5,8 +5,9 @@ import (
 	"TheTinkerDad/sensible/releaseinfo"
 	"context"
 	"fmt"
-	"log"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Provides some minimal info about the process
@@ -18,7 +19,7 @@ func DoInfo() SimpleApiResult {
 // Shuts down the Sensible server
 func DoShutdown(Server *http.Server) SimpleApiResult {
 
-	log.Println("Shutting down...")
+	log.Info("Shutting down...")
 	Server.Shutdown(context.TODO())
 	return SimpleApiResult{Result: Body{Result: "OK"}, Status: http.StatusOK}
 }
@@ -26,7 +27,7 @@ func DoShutdown(Server *http.Server) SimpleApiResult {
 // Pauses MQTT sensor updates
 func DoPauseMqtt() SimpleApiResult {
 
-	log.Println("MQTT Sensor updates paused.")
+	log.Info("MQTT Sensor updates paused.")
 	mqtt.Paused = true
 	return SimpleApiResult{Result: Body{Result: "OK"}, Status: http.StatusOK}
 }
@@ -34,7 +35,7 @@ func DoPauseMqtt() SimpleApiResult {
 // Resumes MQTT sensor updates
 func DoResumeMqtt() SimpleApiResult {
 
-	log.Println("MQTT Sensor updates resumed.")
+	log.Info("MQTT Sensor updates resumed.")
 	mqtt.Paused = false
 	return SimpleApiResult{Result: Body{Result: "OK"}, Status: http.StatusOK}
 }

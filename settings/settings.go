@@ -3,14 +3,15 @@ package settings
 import (
 	"TheTinkerDad/sensible/utility"
 	"errors"
-	"log"
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
 type GeneralSettings struct {
 	Logfile        string
+	LogLevel       string
 	ScriptLocation string
 }
 
@@ -67,7 +68,7 @@ func BackupSettingsFile() {
 // Generates the default configuration file
 func GenerateDefaults() {
 
-	All.General = GeneralSettings{"/var/log/sensible/sensible.log", "/etc/sensible/scripts/"}
+	All.General = GeneralSettings{"/var/log/sensible/sensible.log", "info", "/etc/sensible/scripts/"}
 	All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
 	All.Discovery = DiscoverySettings{"sensible-1", "homeassistant"}
 	All.Api = ApiSettings{Port: 8090, Enabled: false, Token: utility.NewRandomUUID()}
@@ -98,7 +99,7 @@ func GenerateDefaults() {
 // CreateFolders Creates the default folders used by Sensible
 func CreateFolders() {
 
-	log.Println("Creating default folders...")
+	log.Info("Creating default folders...")
 	utility.CreateFolder("/etc/sensible/scripts/")
 	utility.CreateFolder("/var/log/sensible")
 }
@@ -108,7 +109,7 @@ func GenerateDefaultIfNotExists() {
 
 	if _, err := os.Stat(settingsFile); errors.Is(err, os.ErrNotExist) {
 
-		log.Println("Config file not found, writing default config...")
+		log.Warn("Config file not found, writing default config...")
 		GenerateDefaults()
 	}
 }
@@ -135,7 +136,7 @@ func Load() {
 // Initialize Tries to load the current settings - initializes a base settings file if there's none available
 func Initialize() {
 
-	log.Println("Opening configuration file...")
+	log.Debug("Opening configuration file...")
 	GenerateDefaultIfNotExists()
 	Load()
 }

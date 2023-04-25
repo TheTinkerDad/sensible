@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Copy copies a file to another location
@@ -40,6 +41,6 @@ func Copy(src, dst string) (int64, error) {
 func CreateFolder(path string) {
 	err := os.MkdirAll(path, fs.ModeDir)
 	if err != nil {
-		log.Panicf("Couldn't create folder %s!\n", path)
+		log.Panicf("Couldn't create folder %s!", path)
 	}
 }

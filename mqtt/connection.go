@@ -3,30 +3,30 @@ package mqtt
 import (
 	"TheTinkerDad/sensible/settings"
 	"fmt"
-	"log"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	log "github.com/sirupsen/logrus"
 )
 
 var MqttClient mqtt.Client
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	log.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	log.Debugf("Received message: %s from topic: %s", msg.Payload(), msg.Topic())
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	log.Println("Connected")
+	log.Info("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	log.Printf("Connect lost: %v\n", err)
+	log.Warnf("Connect lost: %v", err)
 }
 
 // Initialize Checks if the MQTT connection is intact
 func Initialize() {
 
-	log.Printf("Connecting to MQTT broker at %s:%s...\n", settings.All.Mqtt.Hostname, settings.All.Mqtt.Port)
+	log.Infof("Connecting to MQTT broker at %s:%s...", settings.All.Mqtt.Hostname, settings.All.Mqtt.Port)
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%s", settings.All.Mqtt.Hostname, settings.All.Mqtt.Port))
 	opts.SetClientID(settings.All.Mqtt.ClientId)
