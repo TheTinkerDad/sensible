@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 
@@ -12,17 +11,40 @@ import (
 	"TheTinkerDad/sensible/sensors"
 	"TheTinkerDad/sensible/settings"
 	"TheTinkerDad/sensible/web/api"
+
+	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
+
+func setLogLevel(level string) {
+
+	switch level {
+	case "error":
+		log.SetLevel(logrus.ErrorLevel)
+	case "warning":
+		log.SetLevel(logrus.WarnLevel)
+	case "info":
+		log.SetLevel(logrus.InfoLevel)
+	case "debug":
+		log.SetLevel(logrus.DebugLevel)
+	case "trace":
+		log.SetLevel(logrus.TraceLevel)
+	default:
+		log.SetLevel(logrus.InfoLevel)
+	}
+}
 
 func bootstrap() {
 
-	log.Printf("Bootstrapping Sensible v%s (%s)\n", releaseinfo.Version, releaseinfo.BuildTime)
+	log.Infof("Bootstrapping Sensible v%s (%s)", releaseinfo.Version, releaseinfo.BuildTime)
 	settings.Initialize()
+
+	setLogLevel(settings.All.General.LogLevel)
 
 	f, err := os.OpenFile(settings.All.General.Logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Println("Error opening log file - logging will continue on standard output!")
-		log.Printf("Error details: %v\n", err)
+		log.Info("Error opening log file - logging will continue on standard output!")
+		log.Infof("Error details: %v", err)
 	} else {
 		log.SetOutput(f)
 	}
@@ -48,6 +70,11 @@ func execute() {
 func main() {
 
 	log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.TextFormatter{
+		DisableColors: true,
+		DisableQuote:  true,
+		FullTimestamp: true,
+	})
 
 	var pversion, phelp, preset, unregister bool
 
@@ -62,13 +89,13 @@ func main() {
 	} else if pversion {
 		fmt.Printf("Sensible v%s (%s)\n", releaseinfo.Version, releaseinfo.BuildTime)
 	} else if preset {
-		log.Println("Setting up defaults...")
+		log.Info("Setting up defaults...")
 		settings.CreateFolders()
 		settings.BackupSettingsFile()
 		settings.GenerateDefaults()
 	} else if unregister {
 		bootstrap()
-		log.Println("Unregistering all sensors...")
+		log.Info("Unregistering all sensors...")
 		sensors.UnregisterAllSensors()
 	} else {
 		bootstrap()

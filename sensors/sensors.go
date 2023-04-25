@@ -4,12 +4,13 @@ import (
 	"TheTinkerDad/sensible/mqtt"
 	"TheTinkerDad/sensible/settings"
 	"bytes"
-	"log"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
 	pipe "github.com/TheTinkerDad/go.pipe"
+	log "github.com/sirupsen/logrus"
 )
 
 func getDeviceMetaData() mqtt.DeviceMetadata {
@@ -30,7 +31,6 @@ func getSensorMetaData(id string, name string, icon string, unit string) mqtt.De
 	if id == "heartbeat" {
 		stateTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability"
 		availabilityTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/always-available"
-		//availabilityTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability"
 	} else {
 		stateTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/" + settings.All.Discovery.DeviceName + "_" + id + "/state"
 		availabilityTopic = settings.All.Discovery.Prefix + "/sensor/" + settings.All.Discovery.DeviceName + "/availability"
@@ -66,25 +66,27 @@ func updateSensorBootTime() {
 	// TODO: Find an OS-agnostic solution for this!
 	out, err := exec.Command("uptime", "-s").Output()
 	if err != nil {
-		log.Println(err)
+		log.Warn(err)
 		out = []byte("Unavailable")
 	}
-	mqtt.SendSensorValue("boot_time", string(out))
+	value := strings.TrimSuffix(string(out), "\n")
+	mqtt.SendSensorValue("boot_time", value)
 }
 
 // This updates sensors based on scripts
 
 func updateSensorWithScript(p settings.Plugin) {
 
-	log.Printf("Executing %s%s\n", settings.All.General.ScriptLocation, p.Script)
+	log.Tracef("Executing %s%s", settings.All.General.ScriptLocation, p.Script)
 	// Using pipe here looks like an overkill, but can be useful later...
 	var b bytes.Buffer
 	if err := pipe.Command(&b,
 		exec.Command("sh", "-c", settings.All.General.ScriptLocation+p.Script),
 	); err != nil {
-		log.Fatal(err)
+		log.Warn(err)
 	}
-	mqtt.SendSensorValue(p.SensorId, b.String())
+	value := strings.TrimSuffix(b.String(), "\n")
+	mqtt.SendSensorValue(p.SensorId, value)
 }
 
 var SensorUpdater chan string
@@ -108,11 +110,13 @@ func StartProcessing(wg *sync.WaitGroup) {
 			mqtt.RegisterSensor(getSensorMetaData(p.SensorId, p.Name, p.Icon, p.UnitOfMeasurement))
 		}
 
+		log.Info("Entering MQTT message processing loop...")
+
 		for {
 			if !mqtt.Paused {
 				select {
 				case msg := <-SensorUpdater:
-					log.Println("Received message", msg)
+					log.Tracef("Received message %s", msg)
 				default:
 					mqtt.SendAlwaysAvailableMessage()
 					mqtt.SendDeviceAvailability("Online")

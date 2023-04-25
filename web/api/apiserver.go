@@ -4,9 +4,10 @@ import (
 	"TheTinkerDad/sensible/settings"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var Server *http.Server
@@ -17,7 +18,7 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 
 	result = checkToken(r, result)
 
-	log.Printf("Calling %s...\n", r.URL.Path)
+	log.Debugf("Calling %s...", r.URL.Path)
 
 	if result == nil {
 		if r.URL.Path == "/api/info" {
@@ -61,7 +62,7 @@ func StartApiServer(wg *sync.WaitGroup) {
 		}
 	}()
 
-	log.Printf("Listening on port %d...\n", settings.All.Api.Port)
+	log.Infof("Listening on port %d...", settings.All.Api.Port)
 
 	Server = srv
 }
