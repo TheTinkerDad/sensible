@@ -7,5 +7,5 @@ services:
       - 90:80
       - 8090:8090
     volumes:
-      - /var/log/sensible:/var/log/sensible
-      - /etc/sensible:/etc/sensible
+      - ./log:/var/log/sensible
+      - ./etc/sensible:/etc/sensible

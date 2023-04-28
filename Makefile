@@ -10,9 +10,11 @@ build-noupx: test compile
 	echo "Successfully built Sensible."
 
 docker-example:
-	cp examples/docker/* dist/
-	cp -R examples/scripts dist/
-	$(SHELL) -c "cd dist;docker build -t thetinkerdad/sensible-nginx-test ."
+	mkdir -p dist/docker-build/etc/sensible dist/docker-build/log
+	cp dist/sensible dist/docker-build/
+	cp -R examples/docker/* dist/docker-build
+	cp -R examples/scripts dist/docker-build/etc/sensible
+	$(SHELL) -c "cd dist/docker-build;docker build -t thetinkerdad/sensible-nginx-test .;cd -"
 
 test:
 	go test
