@@ -1,6 +1,7 @@
 package releaseinfo
 
 var (
-	Version   string
-	BuildTime string
+	LastCommit string
+	Version    string
+	BuildTime  string
 )

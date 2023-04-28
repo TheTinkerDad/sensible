@@ -36,7 +36,7 @@ func setLogLevel(level string) {
 
 func bootstrap() {
 
-	log.Infof("Bootstrapping Sensible v%s (%s)", releaseinfo.Version, releaseinfo.BuildTime)
+	log.Infof("Bootstrapping Sensible v%s (%s, Commit: %s)", releaseinfo.Version, releaseinfo.BuildTime, releaseinfo.LastCommit)
 	settings.Initialize()
 
 	setLogLevel(settings.All.General.LogLevel)
@@ -87,7 +87,7 @@ func main() {
 	if phelp {
 		flag.PrintDefaults()
 	} else if pversion {
-		fmt.Printf("Sensible v%s (%s)\n", releaseinfo.Version, releaseinfo.BuildTime)
+		fmt.Printf("Sensible v%s (%s, Commit: %s)\n", releaseinfo.Version, releaseinfo.BuildTime, releaseinfo.LastCommit)
 	} else if preset {
 		log.Info("Setting up defaults...")
 		settings.CreateFolders()
