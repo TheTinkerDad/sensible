@@ -61,23 +61,30 @@ Second, you can implement them as unix shell scripts. In this case, you don't ne
      icon: mdi:check-network
    ```
 
+# Removing sensors from Home Assistant
+
+If you need to change your Sensible sensors in the configuration.yaml file in a way that it will break entities in Home Assistant, it is highly advised to remove all the sensors from Home Assistant
+
 # Building Sensible
 
-Being very early in development, Sensible is currently being built for Linux, using make:
+## Requirements
 
-This downloads the minimal dependencies required
-```
-make prepare  
-```
+ - Golang 1.14 or newer
+ - GNU Make
+ - UPX (Universal Packer for eXecutables) - this one is optional though
+
+## Build using make
+
+Sensible is currently being built for Linux, using make:
 
 This one builds the executable and packs it with UPX
 ```
 make build    
 ```
 
-Also builds the executable, but without applying UPX
+Also builds the executable, but without applying UPX:
 ```
-make build    
+make build-noupx
 ```
 
 It is also possible to build example code for Docker, etc - see the Example usage section for this.
@@ -86,7 +93,7 @@ It is also possible to build example code for Docker, etc - see the Example usag
 
 This is currently done via a the file /etc/sensible/settings.yaml
 
-A sample file looks like this
+A sample file looks like this one below - if you start Sensible for the first time with the "-r" command line parameter, the very same file will be generated for you.
 
 ```
 general:
@@ -165,7 +172,6 @@ The only requirement for these scripts is that they should be simple, with an ex
 
  * Security! MQTT encryption and all the bells and whistles to make it production ready ASAP!
  * There should be a way to implement sensors in Go for fully customized sensor data (plugin architecture) without rebuilding Sensible itself
- * Authentication for the REST API and a way to disable it
  * Documentation for the REST API
  * A way to control Sensible via MQTT
  * Configuration via environment variables
