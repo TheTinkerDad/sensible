@@ -1,5 +1,5 @@
 .EXPORT_ALL_VARIABLES:
-VERSION = 0.2.0
+VERSION = 0.3.0
 BUILDDATE = $$(date)
 LASTCOMMIT = $$(git rev-parse --short HEAD)
 

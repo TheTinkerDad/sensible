@@ -3,7 +3,9 @@ package settings
 import (
 	"TheTinkerDad/sensible/utility"
 	"errors"
+	"fmt"
 	"os"
+	"reflect"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -49,7 +51,10 @@ type Plugin struct {
 	Script            string
 	UnitOfMeasurement string
 	Icon              string
+	UpdateInterval    int64
 }
+
+var PluginDefaults = Plugin{"!", "", "!", "", "", "mdi:wrench-check", 10}
 
 var All AllSettings
 
@@ -73,13 +78,13 @@ func GenerateDefaults() {
 	All.Discovery = DiscoverySettings{"sensible-demo", "homeassistant"}
 	All.Api = ApiSettings{Port: 8090, Enabled: false, Token: utility.NewRandomUUID()}
 	All.Plugins = make([]Plugin, 7)
-	All.Plugins[0] = Plugin{"Heartbeat", "internal", "heartbeat", "", "", "mdi:wrench-check"}
-	All.Plugins[1] = Plugin{"Boot Time", "internal", "boot_time", "", "", "mdi:clock"}
-	All.Plugins[2] = Plugin{"System Time", "internal", "system_time", "", "", "mdi:clock"}
-	All.Plugins[3] = Plugin{"Root Disk Free", "script", "root_free", "root_free.sh", "GB", "mdi:harddisk"}
-	All.Plugins[4] = Plugin{"Host IP Address", "script", "ip_address", "ip_address.sh", "", "mdi:network"}
-	All.Plugins[5] = Plugin{"Hostname", "script", "hostname", "hostname.sh", "", "mdi:network"}
-	All.Plugins[6] = Plugin{"Platform", "script", "platform", "platform.sh", "", "mdi:wrench-check"}
+	All.Plugins[0] = Plugin{"Heartbeat", "internal", "heartbeat", "", "", "mdi:wrench-check", 10}
+	All.Plugins[1] = Plugin{"Boot Time", "internal", "boot_time", "", "", "mdi:clock", 120}
+	All.Plugins[2] = Plugin{"System Time", "internal", "system_time", "", "", "mdi:clock", 10}
+	All.Plugins[3] = Plugin{"Root Disk Free", "script", "root_free", "root_free.sh", "GB", "mdi:harddisk", 60}
+	All.Plugins[4] = Plugin{"Host IP Address", "script", "ip_address", "ip_address.sh", "", "mdi:network", 600}
+	All.Plugins[5] = Plugin{"Hostname", "script", "hostname", "hostname.sh", "", "mdi:network", 1200}
+	All.Plugins[6] = Plugin{"Platform", "script", "platform", "platform.sh", "", "mdi:wrench-check", 1200}
 
 	yaml, err := yaml.Marshal(&All)
 	if err != nil {
@@ -131,6 +136,69 @@ func Load() {
 	err = yaml.Unmarshal(raw, &All)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func hasValue(settingType string, settingVal interface{}) bool {
+
+	return (settingType == "string" && settingVal.(string) != "") ||
+		(settingType == "int64" && settingVal.(int64) != 0)
+}
+
+func failWithMissingValue(pluginIndex int, fieldName string) {
+	log.Errorf("Configuration field %s of plugin #%d must have a value!", fieldName, pluginIndex)
+	os.Exit(-1)
+}
+
+func failWithInvalidValue(pluginIndex int, fieldName string, fieldValue string) {
+	log.Errorf("Configuration field %s of plugin #%d has an invalid value: %s", fieldName, pluginIndex, fieldValue)
+	os.Exit(-1)
+}
+
+func ValidatePluginSettings() {
+
+	d := reflect.ValueOf(PluginDefaults)
+	pluginType := d.Type()
+	pluginIndex := 1
+	for _, p := range All.Plugins {
+		v := reflect.ValueOf(p)
+		for i := 0; i < v.NumField(); i++ {
+			fieldName := pluginType.Field(i).Name
+			fieldType := pluginType.Field(i).Type.Name()
+			fieldValue := v.Field(i).Interface()
+			fieldDefault := d.Field(i).Interface()
+			if !hasValue(fieldType, fieldValue) {
+				if fieldDefault == "!" {
+					failWithMissingValue(pluginIndex, fieldName)
+				} else if hasValue(fieldType, fieldDefault) {
+					log.Debugf("Plugin %d. missing config variable %s of type %s!", pluginIndex, fieldName, fieldType)
+					if fieldType == "string" {
+						log.Debugf("Using default value '%s' for configuration field %s of plugin #%d.", fieldDefault.(string), fieldName, pluginIndex)
+						reflect.ValueOf(&p).Elem().Field(i).SetString(fieldDefault.(string))
+					} else if fieldType == "int64" {
+						log.Debugf("Using default value '%d' for configuration field %s of plugin #%d.", fieldDefault.(int64), fieldName, pluginIndex)
+						reflect.ValueOf(&p).Elem().Field(i).SetInt(fieldDefault.(int64))
+					}
+				}
+			} else {
+				validateFieldValue(pluginIndex, fieldName, fieldType, fieldValue)
+			}
+		}
+		pluginIndex++
+	}
+}
+
+func validateFieldValue(pluginIndex int, fieldName string, fieldType string, fieldValue interface{}) {
+
+	switch fieldName {
+	case "Kind":
+		switch fieldValue {
+		case "internal":
+		case "script":
+			return
+		default:
+			failWithInvalidValue(pluginIndex, fieldName, fmt.Sprintf("%v", fieldValue))
+		}
 	}
 }
 

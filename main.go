@@ -49,6 +49,8 @@ func bootstrap() {
 		log.SetOutput(f)
 	}
 
+	settings.ValidatePluginSettings()
+
 	mqtt.Initialize()
 }
 
