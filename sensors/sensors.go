@@ -2,6 +2,7 @@ package sensors
 
 import (
 	"TheTinkerDad/sensible/mqtt"
+	"TheTinkerDad/sensible/releaseinfo"
 	"TheTinkerDad/sensible/settings"
 	"bytes"
 	"fmt"
@@ -74,8 +75,12 @@ func updateSensorBootTime() {
 	mqtt.SendSensorValue("boot_time", value)
 }
 
-// This updates sensors based on scripts
+func updateVersion() {
 
+	mqtt.SendSensorValue("version", fmt.Sprintf("%s-%s", releaseinfo.Version, releaseinfo.LastCommit))
+}
+
+// This updates sensors based on scripts
 func updateSensorWithScript(p settings.Plugin) {
 
 	log.Tracef("Executing %s%s", settings.All.General.ScriptLocation, p.Script)
@@ -88,6 +93,12 @@ func updateSensorWithScript(p settings.Plugin) {
 	}
 	value := strings.TrimSuffix(b.String(), "\n")
 	mqtt.SendSensorValue(p.SensorId, value)
+}
+
+// This updates sensors with fixed values
+func updateFixedSensor(p settings.Plugin) {
+
+	mqtt.SendSensorValue(p.SensorId, p.Value)
 }
 
 var SensorUpdater chan string
@@ -117,6 +128,12 @@ func StartProcessing(wg *sync.WaitGroup) {
 			}
 		}
 
+		// We make sure that the user can't break things by accidentally leaving a sensor's updateinterval empty
+		// or setting it to 0, causing Sensible to churn out MQTT messages that flood the broker!
+		if shortestUpdateInterval < 5 {
+			shortestUpdateInterval = 5
+		}
+
 		log.Info("Entering MQTT message processing loop...")
 
 		for {
@@ -139,10 +156,14 @@ func StartProcessing(wg *sync.WaitGroup) {
 									updateSensorBootTime()
 								case "system_time":
 									updateSensorSystemTime()
+								case "version":
+									updateVersion()
 								default:
 								}
 							case "script":
 								updateSensorWithScript(p)
+							case "fixed":
+								updateFixedSensor(p)
 							default:
 							}
 						}

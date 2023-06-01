@@ -52,9 +52,10 @@ type Plugin struct {
 	UnitOfMeasurement string
 	Icon              string
 	UpdateInterval    int64
+	Value             string
 }
 
-var PluginDefaults = Plugin{"!", "", "!", "", "", "mdi:wrench-check", 10}
+var PluginDefaults = Plugin{"!", "", "!", "", "", "mdi:wrench-check", 10, ""}
 
 var All AllSettings
 
@@ -77,14 +78,15 @@ func GenerateDefaults() {
 	All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
 	All.Discovery = DiscoverySettings{"sensible-demo", "homeassistant"}
 	All.Api = ApiSettings{Port: 8090, Enabled: false, Token: utility.NewRandomUUID()}
-	All.Plugins = make([]Plugin, 7)
-	All.Plugins[0] = Plugin{"Heartbeat", "internal", "heartbeat", "", "", "mdi:wrench-check", 10}
-	All.Plugins[1] = Plugin{"Boot Time", "internal", "boot_time", "", "", "mdi:clock", 120}
-	All.Plugins[2] = Plugin{"System Time", "internal", "system_time", "", "", "mdi:clock", 10}
-	All.Plugins[3] = Plugin{"Root Disk Free", "script", "root_free", "root_free.sh", "GB", "mdi:harddisk", 60}
-	All.Plugins[4] = Plugin{"Host IP Address", "script", "ip_address", "ip_address.sh", "", "mdi:network", 600}
-	All.Plugins[5] = Plugin{"Hostname", "script", "hostname", "hostname.sh", "", "mdi:network", 1200}
-	All.Plugins[6] = Plugin{"Platform", "script", "platform", "platform.sh", "", "mdi:wrench-check", 1200}
+	All.Plugins = make([]Plugin, 8)
+	All.Plugins[0] = Plugin{"Heartbeat", "internal", "heartbeat", "", "", "mdi:wrench-check", 10, ""}
+	All.Plugins[1] = Plugin{"Boot Time", "internal", "boot_time", "", "", "mdi:clock", 120, ""}
+	All.Plugins[2] = Plugin{"System Time", "internal", "system_time", "", "", "mdi:clock", 10, ""}
+	All.Plugins[3] = Plugin{"Version", "internal", "version", "", "", "mdi:wrench-check", 3600, ""}
+	All.Plugins[4] = Plugin{"Root Disk Free", "script", "root_free", "root_free.sh", "GB", "mdi:harddisk", 60, ""}
+	All.Plugins[5] = Plugin{"Host IP Address", "script", "ip_address", "ip_address.sh", "", "mdi:network", 600, ""}
+	All.Plugins[6] = Plugin{"Hostname", "script", "hostname", "hostname.sh", "", "mdi:network", 1200, ""}
+	All.Plugins[7] = Plugin{"Platform", "script", "platform", "platform.sh", "", "mdi:wrench-check", 1200, ""}
 
 	yaml, err := yaml.Marshal(&All)
 	if err != nil {
@@ -195,6 +197,7 @@ func validateFieldValue(pluginIndex int, fieldName string, fieldType string, fie
 		switch fieldValue {
 		case "internal":
 		case "script":
+		case "fixed":
 			return
 		default:
 			failWithInvalidValue(pluginIndex, fieldName, fmt.Sprintf("%v", fieldValue))
