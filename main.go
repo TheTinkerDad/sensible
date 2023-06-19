@@ -38,6 +38,8 @@ func bootstrap() {
 
 	log.Infof("Bootstrapping Sensible v%s (%s, Commit: %s)", releaseinfo.Version, releaseinfo.BuildTime, releaseinfo.LastCommit)
 	settings.Initialize()
+	settings.GenerateDefaultIfNotExists()
+	settings.Load()
 
 	setLogLevel(settings.All.General.LogLevel)
 
@@ -92,6 +94,7 @@ func main() {
 		fmt.Printf("Sensible v%s (%s, Commit: %s)\n", releaseinfo.Version, releaseinfo.BuildTime, releaseinfo.LastCommit)
 	} else if preset {
 		log.Info("Setting up defaults...")
+		settings.Initialize()
 		settings.CreateFolders()
 		settings.BackupSettingsFile()
 		settings.GenerateDefaults()

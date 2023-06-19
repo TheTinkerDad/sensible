@@ -4,6 +4,7 @@ import (
 	"TheTinkerDad/sensible/utility"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 
@@ -59,6 +60,7 @@ var PluginDefaults = Plugin{"!", "", "!", "", "", "mdi:wrench-check", 10, ""}
 
 var All AllSettings
 
+var settingsFolder string = "/etc/sensible/"
 var settingsFile string = "/etc/sensible/settings.yaml"
 
 // Backs up the existing settings file - if there's any
@@ -93,28 +95,49 @@ func GenerateDefaults() {
 		log.Fatal(err)
 	}
 
-	f, err2 := os.Create(settingsFile)
+	err2 := ioutil.WriteFile(settingsFile, yaml, 0600)
 	if err2 != nil {
-		log.Fatal(err)
+		log.Fatal(err2)
 	}
-	_, err2 = f.Write(yaml)
-	if err2 != nil {
-		log.Fatal(err)
-	}
-	f.Close()
+	log.Infof("Successfully written default config file as %s!", settingsFile)
+
+	/*
+	   f, err2 := os.OpenFile(settingsFile, os.O_CREATE, 0600)
+
+	   	if err2 != nil {
+	   		log.Fatal(err)
+	   	}
+
+	   _, err2 = f.Write(yaml)
+
+	   	if err2 != nil {
+	   		log.Fatal(err)
+	   	}
+
+	   f.Close()
+	*/
 }
 
 // CreateFolders Creates the default folders used by Sensible
 func CreateFolders() {
 
 	log.Info("Creating default folders...")
-	utility.CreateFolder("/etc/sensible/scripts/")
-	utility.CreateFolder("/var/log/sensible")
+
+	// We're running Sensible as a non-root user
+	if os.Getuid() == 0 {
+		utility.CreateFolder("/etc/sensible/scripts/")
+		utility.CreateFolder("/var/log/sensible")
+	} else {
+		utility.CreateFolder(settingsFolder + "scripts")
+		utility.CreateFolder(settingsFolder + "log")
+	}
+
 }
 
 // GenerateDefaultIfNotExists Generates the default configuration file
 func GenerateDefaultIfNotExists() {
 
+	log.Debug("Opening configuration file...")
 	if _, err := os.Stat(settingsFile); errors.Is(err, os.ErrNotExist) {
 
 		log.Warn("Config file not found, writing default config...")
@@ -205,10 +228,12 @@ func validateFieldValue(pluginIndex int, fieldName string, fieldType string, fie
 	}
 }
 
-// Initialize Tries to load the current settings - initializes a base settings file if there's none available
+// Initializes The location of the settings based on the detected user
 func Initialize() {
 
-	log.Debug("Opening configuration file...")
-	GenerateDefaultIfNotExists()
-	Load()
+	// We're running Sensible as a non-root user
+	if os.Getuid() != 0 {
+		settingsFolder = os.Getenv("HOME") + "/.sensible/"
+		settingsFile = settingsFolder + "settings.yaml"
+	}
 }
