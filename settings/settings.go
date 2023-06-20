@@ -76,7 +76,12 @@ func BackupSettingsFile() {
 // Generates the default configuration file
 func GenerateDefaults() {
 
-	All.General = GeneralSettings{"/var/log/sensible/sensible.log", "info", "/etc/sensible/scripts/"}
+	// We're running Sensible as a non-root user
+	if os.Getuid() == 0 {
+		All.General = GeneralSettings{"/var/log/sensible/sensible.log", "info", "/etc/sensible/scripts/"}
+	} else {
+		All.General = GeneralSettings{settingsFolder + "log/sensible.log", "info", settingsFolder + "scripts/"}
+	}
 	All.Mqtt = MqttSettings{"127.0.0.1", "1883", "", "", "sensible_mqtt_client"}
 	All.Discovery = DiscoverySettings{"sensible-demo", "homeassistant"}
 	All.Api = ApiSettings{Port: 8090, Enabled: false, Token: utility.NewRandomUUID()}
