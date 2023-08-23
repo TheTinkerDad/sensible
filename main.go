@@ -37,7 +37,7 @@ func setLogLevel(level string) {
 func bootstrap() {
 
 	log.Infof("Bootstrapping Sensible v%s (%s, Commit: %s)", releaseinfo.Version, releaseinfo.BuildTime, releaseinfo.LastCommit)
-	settings.Initialize()
+	settings.Initialize(false)
 	settings.GenerateDefaultIfNotExists()
 	settings.Load()
 
@@ -80,10 +80,11 @@ func main() {
 		FullTimestamp: true,
 	})
 
-	var pversion, phelp, preset, unregister bool
+	var pversion, phelp, pexample, preset, unregister bool
 
 	flag.BoolVar(&pversion, "v", false, "Show version info.")
 	flag.BoolVar(&phelp, "h", false, "Show command line options.")
+	flag.BoolVar(&pexample, "g", false, "Generates a sample config file in the working directory.")
 	flag.BoolVar(&preset, "r", false, "Reset settings or initialize a fresh install.")
 	flag.BoolVar(&unregister, "u", false, "Unregister all sensors from Home Assistant via MQTT.")
 	flag.Parse()
@@ -94,9 +95,13 @@ func main() {
 		fmt.Printf("Sensible v%s (%s, Commit: %s)\n", releaseinfo.Version, releaseinfo.BuildTime, releaseinfo.LastCommit)
 	} else if preset {
 		log.Info("Setting up defaults...")
-		settings.Initialize()
+		settings.Initialize(false)
 		settings.CreateFolders()
 		settings.BackupSettingsFile()
+		settings.GenerateDefaults()
+	} else if pexample {
+		log.Info("Generating example configuration...")
+		settings.Initialize(true)
 		settings.GenerateDefaults()
 	} else if unregister {
 		bootstrap()

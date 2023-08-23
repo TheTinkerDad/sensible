@@ -234,7 +234,14 @@ func validateFieldValue(pluginIndex int, fieldName string, fieldType string, fie
 }
 
 // Initializes The location of the settings based on the detected user
-func Initialize() {
+func Initialize(localonly bool) {
+
+	// Will use the working folder to create / store config. Can be useful for
+	// debugging/development or example config generation.
+	if localonly {
+		settingsFolder = "./"
+		settingsFile = settingsFolder + "settings.yaml"
+	}
 
 	// We're running Sensible as a non-root user
 	if os.Getuid() != 0 {

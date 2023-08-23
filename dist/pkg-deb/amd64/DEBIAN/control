@@ -1,0 +1,7 @@
+Package: sensible
+Version: 0.3.0
+Architecture: amd64
+Maintainer: TheTinkerDad <laszlo.merczel@gmail.com>
+Description: A small system monitoring package.
+ A small tool that provides monitoring for your Linux server, Docker or LXC container, Raspberry Pi, etc. via Home Assistant sensors and MQTT discovery.
+ 

@@ -16,3 +16,5 @@
 
 # Project specific files
 dist/*
+!dist/pkg-deb
+!dist/pkg-rpm

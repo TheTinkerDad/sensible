@@ -1,0 +1,12 @@
+[Unit]
+Description=Sensible Agent Service
+After=network.target
+
+[Service]
+Nice=1
+Type=simple
+ExecStart=/opt/sensible/sensible
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
