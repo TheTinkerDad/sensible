@@ -2,6 +2,7 @@ package sensors
 
 import (
 	"TheTinkerDad/sensible/mqtt"
+	"TheTinkerDad/sensible/releaseinfo"
 	"TheTinkerDad/sensible/settings"
 	"bytes"
 	"fmt"
@@ -74,8 +75,12 @@ func updateSensorBootTime() {
 	mqtt.SendSensorValue("boot_time", value)
 }
 
-// This updates sensors based on scripts
+func updateVersion() {
 
+	mqtt.SendSensorValue("version", fmt.Sprintf("%s-%s", releaseinfo.Version, releaseinfo.LastCommit))
+}
+
+// This updates sensors based on scripts
 func updateSensorWithScript(p settings.Plugin) {
 
 	log.Tracef("Executing %s%s", settings.All.General.ScriptLocation, p.Script)
@@ -88,6 +93,12 @@ func updateSensorWithScript(p settings.Plugin) {
 	}
 	value := strings.TrimSuffix(b.String(), "\n")
 	mqtt.SendSensorValue(p.SensorId, value)
+}
+
+// This updates sensors with fixed values
+func updateFixedSensor(p settings.Plugin) {
+
+	mqtt.SendSensorValue(p.SensorId, p.Value)
 }
 
 var SensorUpdater chan string
@@ -107,8 +118,20 @@ func StartProcessing(wg *sync.WaitGroup) {
 
 		defer wg.Done()
 
+		shortestUpdateInterval := 100000
+		lastUpdated := make(map[string]int64)
 		for _, p := range settings.All.Plugins {
 			mqtt.RegisterSensor(getSensorMetaData(p.SensorId, p.Name, p.Icon, p.UnitOfMeasurement))
+			lastUpdated[p.Name] = 0
+			if int(p.UpdateInterval) < shortestUpdateInterval {
+				shortestUpdateInterval = int(p.UpdateInterval)
+			}
+		}
+
+		// We make sure that the user can't break things by accidentally leaving a sensor's updateinterval empty
+		// or setting it to 0, causing Sensible to churn out MQTT messages that flood the broker!
+		if shortestUpdateInterval < 5 {
+			shortestUpdateInterval = 5
 		}
 
 		log.Info("Entering MQTT message processing loop...")
@@ -122,25 +145,33 @@ func StartProcessing(wg *sync.WaitGroup) {
 					mqtt.SendAlwaysAvailableMessage()
 					mqtt.SendDeviceAvailability("Online")
 					for _, p := range settings.All.Plugins {
-						switch p.Kind {
-						case "internal":
-							//TODO: This should be reflection based!
-							switch p.SensorId {
-							case "boot_time":
-								updateSensorBootTime()
-							case "system_time":
-								updateSensorSystemTime()
+						if time.Now().Unix()-lastUpdated[p.Name] >= p.UpdateInterval {
+							log.Tracef("%d seconds have passed, sending update for %s...", p.UpdateInterval, p.Name)
+							lastUpdated[p.Name] = time.Now().Unix()
+							switch p.Kind {
+							case "internal":
+								//TODO: This should be reflection based!
+								switch p.SensorId {
+								case "boot_time":
+									updateSensorBootTime()
+								case "system_time":
+									updateSensorSystemTime()
+								case "version":
+									updateVersion()
+								default:
+								}
+							case "script":
+								updateSensorWithScript(p)
+							case "fixed":
+								updateFixedSensor(p)
 							default:
 							}
-						case "script":
-							updateSensorWithScript(p)
-						default:
 						}
 					}
 				}
 			}
-			// TODO: This sould be removed and update periodicity should be configurable on a per-sensor basis
-			time.Sleep(10 * time.Second)
+			log.Tracef("Sleeping for %d seconds...", shortestUpdateInterval)
+			time.Sleep(time.Duration(shortestUpdateInterval) * time.Second)
 		}
 	}()
 }

@@ -1,5 +1,5 @@
 .EXPORT_ALL_VARIABLES:
-VERSION = 0.2.0
+VERSION = 0.3.0
 BUILDDATE = $$(date)
 LASTCOMMIT = $$(git rev-parse --short HEAD)
 
@@ -37,3 +37,12 @@ release-rpi-armhf: build
 
 release-rpi-arm64: build
 	$(SHELL) -c "cd dist;tar cvzf sensible-rpi-arm64-$(VERSION).tar.gz sensible"
+
+release-amd64-deb: build
+	$(SHELL) -c "mkdir -p dist/pkg-deb/amd64/etc/sensible/scripts"
+	$(SHELL) -c "mkdir -p dist/pkg-deb/amd64/opt/sensible"
+	$(SHELL) -c "mkdir -p dist/pkg-deb/amd64/var/log/sensible"
+	$(SHELL) -c "cp dist/sensible dist/pkg-deb/amd64/opt/sensible"
+	$(SHELL) -c "cd dist/pkg-deb/amd64/etc/sensible;../../opt/sensible/sensible --g"
+	$(SHELL) -c "cd dist/pkg-deb;dpkg-deb --build --root-owner-group amd64"
+	$(SHELL) -c "cd dist/pkg-deb;dpkg-name amd64.deb"

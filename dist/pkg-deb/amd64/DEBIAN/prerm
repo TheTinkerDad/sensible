@@ -1,0 +1,4 @@
+systemctl stop sensible
+systemctl disable sensible
+systemctl daemon-reload
+rm -rf /var/log/sensible/*
